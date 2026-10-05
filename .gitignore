@@ -1,0 +1,32 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+
+# Generated dependencies and developer files
+node_modules/
+scratch/
+/test_*.php
+/test_*.txt
+/install.php
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Database exports and local state
+/database/*.sql
+/database/*.sqlite*
+/database/installed.lock
+
+# Runtime data (keep storage access rules)
+/storage/cache/
+/storage/logs/*.log
+/storage/backups/*
+!/storage/backups/.htaccess
+/storage/security/*.json
+
+# Temporary files
+*.bak
+*.tmp
+*.swp

@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "scripts": {
+    "build:admin-css": "tailwindcss -i assets/css/admin-source.css -o assets/css/admin.css --minify"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "4.3.3",
+    "tailwindcss": "4.3.3"
+  }
+}

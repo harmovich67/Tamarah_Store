@@ -1,0 +1,29 @@
+<IfModule mod_rewrite.c>
+    Options -MultiViews
+    RewriteEngine On
+
+    # Prevent directory listing
+    Options -Indexes
+
+    # Security: Block direct access to sensitive file types (.env, .sql, .log, .git, etc.)
+    <FilesMatch "^\.|\.(bak|config|dist|fla|inc|ini|log|psd|sh|sql|sw[op]|env.*)$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+
+    # Security: Block direct web access to storage directory completely
+    RewriteRule ^storage(/|$) - [F,L]
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # If the requested file or directory exists in the filesystem, serve it directly
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Rewrite all other requests to index.php
+    RewriteRule ^ index.php [L,QSA]
+</IfModule>
+
