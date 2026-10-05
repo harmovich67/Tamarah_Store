@@ -512,7 +512,7 @@ $userInitial = $user ? mb_substr(trim((string)($user['name'] ?? 'U')), 0, 1) : '
         function img(src) {
             if (!src) return T.fallbackImg;
             if (/^(https?:)?\/\//.test(src)) return src;
-            return window.appUrl('/' + String(src).replace(/^\//, ''));
+            return window.appAsset(String(src));
         }
 
         window.tumurnaSyncCartBadge = function (cart) {
@@ -568,7 +568,12 @@ $userInitial = $user ? mb_substr(trim((string)($user['name'] ?? 'U')), 0, 1) : '
 
         window.tumurnaRefreshCart = function () {
             return fetch(window.appUrl('/api/cart'))
-                .then(function (r) { return r.json(); })
+                .then(function (r) {
+                    if (!r.ok || !(r.headers.get('content-type') || '').includes('application/json')) {
+                        throw new Error('Cart API returned HTTP ' + r.status);
+                    }
+                    return r.json();
+                })
                 .then(function (d) { if (d.success) render(d.cart); })
                 .catch(function (e) { console.error(e); });
         };
