@@ -350,13 +350,51 @@ class Migrator
                 section_key VARCHAR(100) NOT NULL UNIQUE,
                 name_ar VARCHAR(150) NOT NULL,
                 name_en VARCHAR(150) NOT NULL,
+                title_ar VARCHAR(255) NULL,
+                title_en VARCHAR(255) NULL,
+                subtitle_ar VARCHAR(255) NULL,
+                subtitle_en VARCHAR(255) NULL,
+                badge_ar VARCHAR(100) NULL,
+                badge_en VARCHAR(100) NULL,
+                image VARCHAR(255) NULL,
+                button_text_ar VARCHAR(100) NULL,
+                button_text_en VARCHAR(100) NULL,
+                button_url VARCHAR(255) NULL,
+                style VARCHAR(50) DEFAULT 'default',
+                is_custom TINYINT(1) DEFAULT 0,
                 order_index INT DEFAULT 0,
                 status VARCHAR(20) DEFAULT 'active',
                 style_options TEXT NULL,
                 custom_content_ar MEDIUMTEXT NULL,
-                custom_content_en MEDIUMTEXT NULL
+                custom_content_en MEDIUMTEXT NULL,
+                settings_json LONGTEXT NULL
             );
         ");
+
+        // Older installations created this table before the homepage CMS fields existed.
+        $sectionColumns = [
+            'title_ar' => 'VARCHAR(255) NULL',
+            'title_en' => 'VARCHAR(255) NULL',
+            'subtitle_ar' => 'VARCHAR(255) NULL',
+            'subtitle_en' => 'VARCHAR(255) NULL',
+            'badge_ar' => 'VARCHAR(100) NULL',
+            'badge_en' => 'VARCHAR(100) NULL',
+            'image' => 'VARCHAR(255) NULL',
+            'button_text_ar' => 'VARCHAR(100) NULL',
+            'button_text_en' => 'VARCHAR(100) NULL',
+            'button_url' => 'VARCHAR(255) NULL',
+            'style' => "VARCHAR(50) DEFAULT 'default'",
+            'is_custom' => 'TINYINT(1) DEFAULT 0',
+            'settings_json' => 'LONGTEXT NULL',
+        ];
+        $existingSectionColumns = $isSqlite
+            ? array_column($pdo->query('PRAGMA table_info(home_sections)')->fetchAll(PDO::FETCH_ASSOC), 'name')
+            : array_column($pdo->query('SHOW COLUMNS FROM home_sections')->fetchAll(PDO::FETCH_ASSOC), 'Field');
+        foreach ($sectionColumns as $column => $definition) {
+            if (!in_array($column, $existingSectionColumns, true)) {
+                $pdo->exec("ALTER TABLE home_sections ADD COLUMN `$column` $definition");
+            }
+        }
 
         // 18. Live Translations
         $pdo->exec("
@@ -571,11 +609,8 @@ class Migrator
 
         // 2. Seed Users
         $adminUser = Database::fetchOne("SELECT id FROM users WHERE email = 'admin@tumurna.com'");
-        if (!$adminUser) {
-            $adminPassword = trim((string) env('ADMIN_PASSWORD', ''));
-            if ($adminPassword === '' || $adminPassword === 'replace_with_a_strong_unique_password') {
-                throw new \RuntimeException('Set a strong ADMIN_PASSWORD in .env before initializing the database.');
-            }
+        $adminPassword = trim((string) env('ADMIN_PASSWORD', ''));
+        if (!$adminUser && $adminPassword !== '' && $adminPassword !== 'replace_with_a_strong_unique_password') {
             $hash = password_hash($adminPassword, PASSWORD_BCRYPT);
             $stmt = $pdo->prepare("
                 INSERT INTO users (role_id, school_id, name, email, password, phone, status)
@@ -1010,6 +1045,28 @@ class Migrator
             }
         }
 
+        // Homepage CMS sections are required for the storefront to render its content.
+        // Insert only missing built-in sections so existing visibility, order, and edits survive.
+        $existingHomeKeys = array_column(Database::fetchAll('SELECT section_key FROM home_sections'), 'section_key');
+        $defaultHomeSections = [
+            ['hero', 'السلايدر الرئيسي', 'Hero Slider', 'السلايدر الرئيسي', 'Hero Slider', null, 1],
+            ['categories', 'أقسام التمور', 'Date Categories', 'أقسام التمور', 'Date Categories', null, 2],
+            ['featured_products', 'المنتجات المميزة', 'Featured Products', 'منتجات مميزة', 'Featured Products', null, 3],
+            ['preorder', 'الحجز المسبق', 'Harvest Pre-Order', 'احجز حصاد التمور القادم', 'Reserve the Next Harvest', 'assets/images/fresh_ruthab_harvest_1787053947518.jpg', 4],
+            ['features', 'مميزات تمرنا', 'Why Choose Tamrna', 'لماذا تختار تمرنا؟', 'Why Choose Tamrna?', null, 5],
+            ['testimonials', 'آراء العملاء', 'Customer Testimonials', 'آراء عملائنا', 'What Our Customers Say', null, 6],
+            ['newsletter', 'النشرة البريدية', 'Newsletter', 'ابق على اطلاع', 'Stay in the Loop', null, 7],
+        ];
+        $homeSectionInsert = $pdo->prepare('
+            INSERT INTO home_sections (section_key, name_ar, name_en, title_ar, title_en, image, order_index, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, \'active\')
+        ');
+        foreach ($defaultHomeSections as $section) {
+            if (!in_array($section[0], $existingHomeKeys, true)) {
+                $homeSectionInsert->execute($section);
+            }
+        }
+
         // 6. Seed Site Settings
         $settings = [
             'site_name_ar' => 'تَـمْرُنـا للتمور الفاخرة',
@@ -1043,7 +1100,8 @@ class Migrator
             'tiktok_url' => 'https://tiktok.com/@tumurna_dates'
         ];
 
-        $settStmt = $pdo->prepare("INSERT INTO settings (`key`, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)");
+        $settingsInsert = Database::getDriver() === 'sqlite' ? 'INSERT OR IGNORE' : 'INSERT IGNORE';
+        $settStmt = $pdo->prepare("{$settingsInsert} INTO settings (`key`, `value`) VALUES (?, ?)");
         foreach ($settings as $k => $v) {
             $settStmt->execute([$k, $v]);
         }
@@ -1085,8 +1143,8 @@ class Migrator
                     city, district, shipping_type, subtotal, shipping_fee, discount, total,
                     payment_method, payment_status, shipping_status, notes
                 ) VALUES
-                ('TUM-2026-8910', 3, 'فهد الناصر', '0555123456', 'fahad@example.com', 'حي النرجس، شارع الأمير فيصل بن بندر', 'الرياض', 'النرجس', 'home_delivery', 420.00, 0.00, 40.00, 380.00, 'mada', 'paid', 'shipped', 'يرجى الاتصال قبل التوصيل'),
-                ('TUM-2026-8911', 3, 'سارة العتيبي', '0555987654', 'sara@example.com', 'حي الروضة، طريق الكورنيش', 'جدة', 'الروضة', 'home_delivery', 180.00, 25.00, 0.00, 205.00, 'apple_pay', 'paid', 'processing', 'تغليف إهداء فاخر'),
+                ('TUM-2026-8910', NULL, 'فهد الناصر', '0555123456', 'fahad@example.com', 'حي النرجس، شارع الأمير فيصل بن بندر', 'الرياض', 'النرجس', 'home_delivery', 420.00, 0.00, 40.00, 380.00, 'mada', 'paid', 'shipped', 'يرجى الاتصال قبل التوصيل'),
+                ('TUM-2026-8911', NULL, 'سارة العتيبي', '0555987654', 'sara@example.com', 'حي الروضة، طريق الكورنيش', 'جدة', 'الروضة', 'home_delivery', 180.00, 25.00, 0.00, 205.00, 'apple_pay', 'paid', 'processing', 'تغليف إهداء فاخر'),
                 ('TUM-2026-8912', NULL, 'عبدالله الحربي', '0555443322', 'harbi@example.com', 'استلام من فرع سلطانة', 'المدينة المنورة', 'سلطانة', 'branch_pickup', 240.00, 0.00, 0.00, 240.00, 'cod', 'pending', 'pending', 'استلام مسائي من الفرع')
             ");
 

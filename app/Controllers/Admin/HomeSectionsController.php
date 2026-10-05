@@ -254,8 +254,9 @@ class HomeSectionsController
                 section_key, name_ar, name_en, is_custom, title_ar, title_en, subtitle_ar, subtitle_en, style,
                 custom_content_ar, custom_content_en, image, button_text_ar, button_text_en, button_url,
                 order_index, status
-            ) VALUES ('custom', ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
+            ) VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
         ", [
+            'custom_' . bin2hex(random_bytes(8)),
             $titleAr ?: $titleEn, $titleEn ?: $titleAr,
             $titleAr ?: $titleEn, $titleEn ?: $titleAr,
             $subtitleAr, $subtitleEn, $style,

@@ -208,6 +208,8 @@ $arrow = $isRtl ? 'arrow-left' : 'arrow-right';
     <?php if ($featuresSection !== null) $renderFeatureStrip($featuresSection); ?>
 <?php endif; ?>
 
+<?php if ($heroSection === null && $featuresSection !== null) $renderFeatureStrip($featuresSection); ?>
+
 <div class="home-content container">
 
     <?php /* ===================== static gift banner ===================== */ ?>
