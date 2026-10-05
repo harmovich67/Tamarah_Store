@@ -118,9 +118,10 @@ if (!function_exists('url')) {
         }
 
         $base = base_path_url();
-        $routeBase = strtolower((string) env('APP_ROUTE_MODE', 'path_info')) === 'rewrite'
-            ? $base
-            : $base . '/index.php';
+        $routeMode = strtolower((string) env('APP_ROUTE_MODE', 'rewrite'));
+        $routeBase = $routeMode === 'path_info'
+            ? $base . '/index.php'
+            : $base;
         $trimmed = ltrim($path, '/');
 
         // Prevent duplicate prefixing if path already starts with base

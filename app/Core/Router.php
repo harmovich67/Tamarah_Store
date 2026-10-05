@@ -41,6 +41,21 @@ class Router
         if ($base !== '' && str_starts_with($uri, $base)) {
             $uri = substr($uri, strlen($base));
         }
+
+        // Canonical redirect: If accessed with /index.php in URL and route mode is not path_info,
+        // redirect 301 to the clean URL so index.php is completely hidden from the browser address bar
+        $routeMode = strtolower((string) env('APP_ROUTE_MODE', 'rewrite'));
+        if ($routeMode !== 'path_info' && ($uri === '/index.php' || str_starts_with($uri, '/index.php/'))) {
+            $cleanUri = substr($uri, strlen('/index.php'));
+            $cleanUri = '/' . ltrim($cleanUri, '/');
+            $redirectTarget = ($base !== '' ? $base : '') . $cleanUri;
+            if (!empty($_SERVER['QUERY_STRING'])) {
+                $redirectTarget .= '?' . $_SERVER['QUERY_STRING'];
+            }
+            Response::redirect($redirectTarget ?: '/');
+            return;
+        }
+
         if ($uri === '/index.php' || str_starts_with($uri, '/index.php/')) {
             $uri = substr($uri, strlen('/index.php'));
         }
@@ -100,7 +115,7 @@ class Router
                 if ($request->isAjax()) {
                     Response::json(['success' => false, 'message' => 'Forbidden: Super Admin only'], 403);
                 } else {
-                    Response::redirect(Auth::check() ? '/admin' : '/admin/login');
+                    Response::redirect(Auth::check() ? '/admin' : '/login');
                 }
                 return false;
             }
@@ -111,7 +126,7 @@ class Router
                 if ($request->isAjax()) {
                     Response::json(['success' => false, 'message' => 'Forbidden: Store Manager only'], 403);
                 } else {
-                    Response::redirect('/admin/login');
+                    Response::redirect('/login');
                 }
                 return false;
             }

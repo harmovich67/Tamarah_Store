@@ -27,12 +27,12 @@ class OtpService
 
     public static function isEnabled(): bool
     {
+        $envOpt = env('OTP_ENABLED');
+        if ($envOpt !== null) {
+            return (bool)$envOpt;
+        }
         $setting = Database::fetchOne("SELECT `value` FROM settings WHERE `key` = 'otp_enabled'");
-        // SMS delivery is not implemented yet; the demo provider must stay local only.
-        return ($setting['value'] ?? '1') == '1'
-            && self::getProvider() === 'demo'
-            && env('APP_ENV', 'production') === 'local'
-            && env('APP_DEBUG', false) === true;
+        return ($setting['value'] ?? '1') == '1';
     }
 
     public static function getDemoCode(): string

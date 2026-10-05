@@ -12,8 +12,21 @@ ini_set('display_errors', '0');
 ini_set('display_startup_errors', '0');
 error_reporting(E_ALL);
 
-// Start session if not started
+// Start session if not started with persistent cookie
 if (session_status() === PHP_SESSION_NONE) {
+    $lifetime = 86400 * 30; // 30 days session
+    @ini_set('session.gc_maxlifetime', (string)$lifetime);
+    $secure = (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off')
+        || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https')
+        || (!empty($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443);
+    @session_set_cookie_params([
+        'lifetime' => $lifetime,
+        'path' => '/',
+        'domain' => '',
+        'secure' => $secure,
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
     session_start();
 }
 
