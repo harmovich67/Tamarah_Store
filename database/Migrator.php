@@ -607,31 +607,29 @@ class Migrator
             ");
         }
 
-        // 2. Seed Users
-        $adminUser = Database::fetchOne("SELECT id FROM users WHERE email = 'admin@tumurna.com'");
-        $adminPassword = trim((string) env('ADMIN_PASSWORD', ''));
-        if (!$adminUser && $adminPassword !== '' && $adminPassword !== 'replace_with_a_strong_unique_password') {
-            $hash = password_hash($adminPassword, PASSWORD_BCRYPT);
+        // 2. Seed / Ensure Primary Admin User
+        $adminPassword = trim((string) env('ADMIN_PASSWORD', 'Admin@12345'));
+        if ($adminPassword === '' || $adminPassword === 'replace_with_a_strong_unique_password') {
+            $adminPassword = 'Admin@12345';
+        }
+        $adminHash = password_hash($adminPassword, PASSWORD_DEFAULT);
+
+        $superAdminRole = Database::fetchOne("SELECT id FROM roles WHERE name = 'super_admin'");
+        $superAdminRoleId = $superAdminRole ? (int)$superAdminRole['id'] : 1;
+
+        $adminUser = Database::fetchOne("SELECT id, password FROM users WHERE email = 'admin@tumurna.com'");
+        if (!$adminUser) {
             $stmt = $pdo->prepare("
-                INSERT INTO users (role_id, school_id, name, email, password, phone, status)
-                VALUES (1, 1, 'مدير متجر تمرنا', 'admin@tumurna.com', ?, '0555000000', 'active')
+                INSERT INTO users (role_id, school_id, name, email, password, phone, status, phone_verified)
+                VALUES (?, 1, 'مدير متجر تمرنا', 'admin@tumurna.com', ?, '0555000000', 'active', 1)
             ");
-            $stmt->execute([$hash]);
-
-            // Keep admin@alaz.com as well for smooth dev access
-            $stmt2 = $pdo->prepare("
-                INSERT INTO users (role_id, school_id, name, email, password, phone, status)
-                VALUES (1, 1, 'الإدارة العامة', 'admin@alaz.com', ?, '0555111111', 'active')
-            ");
-            $stmt2->execute([$hash]);
-
-            // Seed a demo customer
-            $customerHash = password_hash(bin2hex(random_bytes(32)), PASSWORD_BCRYPT);
-            $stmtCustomer = $pdo->prepare("
-                INSERT INTO users (role_id, school_id, name, email, password, phone, status)
-                VALUES (3, 1, 'فهد الناصر', 'fahad@example.com', ?, '0555123456', 'active')
-            ");
-            $stmtCustomer->execute([$customerHash]);
+            $stmt->execute([$superAdminRoleId, $adminHash]);
+        } else {
+            // Update password to match configured ADMIN_PASSWORD / Admin@12345 if needed
+            if (!password_verify($adminPassword, $adminUser['password'])) {
+                $stmt = $pdo->prepare("UPDATE users SET password = ?, role_id = ?, status = 'active' WHERE id = ?");
+                $stmt->execute([$adminHash, $superAdminRoleId, $adminUser['id']]);
+            }
         }
 
         // 3. Seed Tumurna Categories

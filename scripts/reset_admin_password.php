@@ -15,8 +15,8 @@ if ($password === false) {
     exit(1);
 }
 $password = rtrim($password, "\r\n");
-if (mb_strlen($password) < 12 || strlen($password) > 72 || str_contains($password, "\0")) {
-    fwrite(STDERR, "Use a password of at least 12 characters and at most 72 bytes.\n");
+if (mb_strlen($password) < 8 || strlen($password) > 72 || str_contains($password, "\0")) {
+    fwrite(STDERR, "Use a password of at least 8 characters and at most 72 bytes.\n");
     exit(1);
 }
 
