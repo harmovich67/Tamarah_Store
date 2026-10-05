@@ -1,3 +1,9 @@
+# Apache's directory fallback also handles clean URLs when mod_rewrite is not loaded.
+# The document root must be the project directory and .htaccess must be enabled.
+<IfModule mod_dir.c>
+    FallbackResource /index.php
+</IfModule>
+
 <IfModule mod_rewrite.c>
     Options -MultiViews
     RewriteEngine On

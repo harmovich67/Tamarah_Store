@@ -100,7 +100,7 @@ class Router
                 if ($request->isAjax()) {
                     Response::json(['success' => false, 'message' => 'Forbidden: Super Admin only'], 403);
                 } else {
-                    Response::redirect('/admin');
+                    Response::redirect(Auth::check() ? '/admin' : '/admin/login');
                 }
                 return false;
             }
@@ -111,7 +111,7 @@ class Router
                 if ($request->isAjax()) {
                     Response::json(['success' => false, 'message' => 'Forbidden: Store Manager only'], 403);
                 } else {
-                    Response::redirect('/login');
+                    Response::redirect('/admin/login');
                 }
                 return false;
             }

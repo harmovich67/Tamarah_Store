@@ -6,6 +6,8 @@ $arrow = $isRtl ? 'arrow-left' : 'arrow-right';
 $otpEnabled = \App\Services\OtpService::isEnabled();
 $immersiveHeader = true;
 $authLayout = true;
+$adminLogin = str_ends_with(rtrim(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '', '/'), '/admin/login');
+$loginAction = url($adminLogin ? '/admin/login' : '/login');
 ?>
 <div class="auth-page">
     <div class="auth-scene"><img src="<?= asset('assets/images/home/hero.webp') ?>" alt="" style="position:absolute;inset:0;width:100%;height:100%"></div>
@@ -14,8 +16,8 @@ $authLayout = true;
             <div class="auth-card">
                 <header class="auth-card-heading">
                     <?= fnd_icon('tree-palm', 45, '', 1.2) ?>
-                    <h1><?= __('customer_login') ?></h1>
-                    <p>سجل دخولك لمتابعة طلبات التمور الفاخرة، الشحن وعناوين التوصيل</p>
+                    <h1><?= $adminLogin ? 'تسجيل دخول الإدارة' : __('customer_login') ?></h1>
+                    <p><?= $adminLogin ? 'أدخل بيانات حساب الإدارة للوصول إلى لوحة التحكم' : 'سجل دخولك لمتابعة طلبات التمور الفاخرة، الشحن وعناوين التوصيل' ?></p>
                 </header>
 
                 <?php if (!empty($notice)): ?>
@@ -35,7 +37,7 @@ $authLayout = true;
                 </div>
 
                 <!-- OTP phone login -->
-                <form id="formOtpLogin" action="<?= url('/login') ?>" method="POST" class="auth-form">
+                <form id="formOtpLogin" action="<?= $loginAction ?>" method="POST" class="auth-form">
                     <input type="hidden" name="login_type" value="otp">
                     <fieldset>
                         <p class="auth-hint">أدخل رقم جوالك السعودي وسنرسل لك رمز OTP للدخول الفوري السريع. <strong>كود التجربة السريع: 123456</strong></p>
@@ -52,7 +54,7 @@ $authLayout = true;
                 <?php endif; ?>
 
                 <!-- Password login -->
-                <form id="formPassLogin" action="<?= url('/login') ?>" method="POST" class="auth-form<?= $otpEnabled ? ' hidden' : '' ?>">
+                <form id="formPassLogin" action="<?= $loginAction ?>" method="POST" class="auth-form<?= $otpEnabled ? ' hidden' : '' ?>">
                     <input type="hidden" name="login_type" value="password">
                     <fieldset>
                         <div class="form-field">

@@ -12,6 +12,20 @@
 
 إذا كانت روابط مثل `/login` ترجع 404 من Apache، استخدم `APP_ROUTE_MODE=path_info` في `.env` (وهو الوضع الافتراضي). ستصبح الروابط مثل `/index.php/login` وتعمل دون `mod_rewrite`. بعد تفعيل إعادة كتابة الروابط في Apache يمكن اختيار `APP_ROUTE_MODE=rewrite` للحصول على الروابط المختصرة.
 
+### فتح الروابط مباشرة مثل `/admin/login`
+
+يجب أن يشير `DocumentRoot` للدومين إلى المجلد الذي يحتوي على `index.php` و`.htaccess`، وأن يسمح Apache بقراءة `.htaccess`. مثال داخل إعدادات الـ VirtualHost (استبدل المسار بمسار المشروع الحقيقي):
+
+```apache
+DocumentRoot /home/USER/Tamarah_Store
+<Directory /home/USER/Tamarah_Store>
+    AllowOverride All
+    Require all granted
+</Directory>
+```
+
+فعّل `mod_rewrite` ثم أعد تحميل Apache إن كانت لديك صلاحية إدارة الخادم. يحتوي `.htaccess` أيضًا على `FallbackResource /index.php` لتوجيه الروابط عندما تكون وحدة `mod_dir` متاحة ولا تعمل `mod_rewrite`. بعد التأكد من أن `https://tamarah.wordpress.aait-d.com/admin/login` يعرض صفحة الدخول، اضبط `APP_ROUTE_MODE=rewrite` في `.env` على السيرفر حتى تستخدم الروابط والنماذج وطلبات API العناوين المباشرة. إذا استمر Apache في إرجاع 404 فلا يمكن إصلاح ذلك من PHP وحده؛ اطلب من مسؤول الاستضافة تفعيل `AllowOverride All` للدومين أو إضافة توجيه الطلبات إلى `index.php` في إعدادات الـ VirtualHost.
+
 الدخول برمز الهاتف التجريبي معطل في الإنتاج لأن إرسال الرسائل الفعلي لم يُضبط بعد. استخدم بريد الإدارة وكلمة المرور التي حددتها في `ADMIN_PASSWORD`؛ تسجيل العملاء برمز الهاتف يحتاج ربط مزود رسائل حقيقي قبل تفعيله.
 
 إذا لم تكن كلمة مرور المدير معروفة، شغّل أداة إعادة التعيين من تيرمنال السيرفر داخل المشروع. الأداة تقرأ كلمة المرور من الإدخال القياسي ولا تعرضها:

@@ -177,6 +177,8 @@ $router->post('/api/checkout/calculate-shipping', [\App\Controllers\CheckoutCont
 // ==========================================
 $router->get('/login', [\App\Controllers\AuthController::class, 'showLogin']);
 $router->post('/login', [\App\Controllers\AuthController::class, 'login']);
+$router->get('/admin/login', [\App\Controllers\AuthController::class, 'showLogin']);
+$router->post('/admin/login', [\App\Controllers\AuthController::class, 'login']);
 
 $router->get('/register', [\App\Controllers\AuthController::class, 'showRegister']);
 $router->post('/register', [\App\Controllers\AuthController::class, 'register']);
