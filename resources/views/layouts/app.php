@@ -137,11 +137,16 @@ $userInitial = $user ? mb_substr(trim((string)($user['name'] ?? 'U')), 0, 1) : '
     <?php if (!empty($extra_head)) echo $extra_head; ?>
 
     <script>
-        window.APP_URL = <?= json_encode(base_path_url()) ?>;
+        window.APP_URL = <?= json_encode(rtrim(url('/'), '/')) ?>;
+        window.ASSET_URL = <?= json_encode(base_path_url()) ?>;
         window.appUrl = function(path) {
             path = path || '';
             if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('//')) return path;
             return window.APP_URL + (path.startsWith('/') ? path : '/' + path);
+        };
+        window.appAsset = function(path) {
+            if (/^(https?:)?\/\//.test(path)) return path;
+            return window.ASSET_URL + '/' + path.replace(/^\//, '');
         };
     </script>
 </head>

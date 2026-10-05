@@ -28,7 +28,11 @@ class OtpService
     public static function isEnabled(): bool
     {
         $setting = Database::fetchOne("SELECT `value` FROM settings WHERE `key` = 'otp_enabled'");
-        return ($setting['value'] ?? '1') == '1';
+        // SMS delivery is not implemented yet; the demo provider must stay local only.
+        return ($setting['value'] ?? '1') == '1'
+            && self::getProvider() === 'demo'
+            && env('APP_ENV', 'production') === 'local'
+            && env('APP_DEBUG', false) === true;
     }
 
     public static function getDemoCode(): string
@@ -54,6 +58,9 @@ class OtpService
      */
     public static function sendOtp(string $phone): array
     {
+        if (!self::isEnabled()) {
+            return ['success' => false, 'message' => 'تسجيل الدخول برمز الهاتف غير متاح حالياً. استخدم كلمة المرور.'];
+        }
         $phone = self::cleanPhone($phone);
         $demoCode = self::getDemoCode();
         $provider = self::getProvider();
@@ -101,6 +108,9 @@ class OtpService
      */
     public static function verifyOtp(string $phone, string $submittedCode): array
     {
+        if (!self::isEnabled()) {
+            return ['success' => false, 'message' => 'تسجيل الدخول برمز الهاتف غير متاح حالياً.'];
+        }
         $phone = self::cleanPhone($phone);
         $submittedCode = trim($submittedCode);
         $demoCode = self::getDemoCode();

@@ -41,6 +41,10 @@ class AuthController
         // 1. Phone + OTP Login
         $loginType = $request->get('login_type');
         if ($loginType === 'otp') {
+            if (!OtpService::isEnabled()) {
+                Response::view('auth/login', ['error' => 'الدخول برمز الهاتف غير متاح حالياً. استخدم البريد وكلمة المرور.']);
+                return;
+            }
             $phone = OtpService::cleanPhone((string)$request->get('phone'));
             if (empty($phone) || strlen($phone) < 9) {
                 Response::view('auth/login', ['error' => 'يرجى إدخال رقم جوال سعودي صحيح (مثال: 0555123456)']);
@@ -118,6 +122,10 @@ class AuthController
 
     public function register(Request $request): void
     {
+        if (!OtpService::isEnabled()) {
+            Response::view('auth/register', ['error' => 'التسجيل برمز الهاتف غير متاح حالياً.']);
+            return;
+        }
         $name = trim((string)$request->get('name'));
         $phone = OtpService::cleanPhone((string)$request->get('phone'));
         $email = trim((string)$request->get('email'));

@@ -95,6 +95,8 @@ if (!function_exists('base_path_url')) {
 
             // Auto-detect from SCRIPT_NAME (e.g. /alaz/index.php -> /alaz)
             $script = $_SERVER['SCRIPT_NAME'] ?? '';
+            // PATH_INFO requests may expose /index.php/login as SCRIPT_NAME.
+            $script = preg_replace('#/index\.php(?:/.*)?$#i', '/index.php', $script);
             $dir = str_replace('\\', '/', dirname($script));
             $base = ($dir === '/' || $dir === '.' || $dir === '' || $dir === '\\') ? '' : '/' . trim($dir, '/');
         }
@@ -116,18 +118,26 @@ if (!function_exists('url')) {
         }
 
         $base = base_path_url();
+        $routeBase = strtolower((string) env('APP_ROUTE_MODE', 'path_info')) === 'rewrite'
+            ? $base
+            : $base . '/index.php';
         $trimmed = ltrim($path, '/');
 
         // Prevent duplicate prefixing if path already starts with base
-        if ($base !== '' && (str_starts_with('/' . $trimmed, $base . '/') || '/' . $trimmed === $base)) {
+        if (($base !== '' && (str_starts_with('/' . $trimmed, $base . '/') || '/' . $trimmed === $base))
+            || ($routeBase !== '' && (str_starts_with('/' . $trimmed, $routeBase . '/') || '/' . $trimmed === $routeBase))) {
             return '/' . ltrim($trimmed, '/');
         }
 
         if ($trimmed === '') {
-            return $base !== '' ? $base : '/';
+            return $routeBase !== '' ? $routeBase : '/';
         }
 
-        return ($base !== '' ? $base : '') . '/' . $trimmed;
+        if (str_starts_with($trimmed, '?')) {
+            return ($routeBase !== '' ? $routeBase : '/') . $trimmed;
+        }
+
+        return ($routeBase !== '' ? $routeBase : '') . '/' . $trimmed;
     }
 }
 
@@ -160,7 +170,12 @@ if (!function_exists('asset')) {
             || str_starts_with($path, '//') || str_starts_with($path, 'data:')) {
             return $path;
         }
-        return url($path);
+        $base = base_path_url();
+        $relative = '/' . ltrim($path, '/');
+        if ($base !== '' && ($relative === $base || str_starts_with($relative, $base . '/'))) {
+            return $relative;
+        }
+        return $base . $relative;
     }
 }
 

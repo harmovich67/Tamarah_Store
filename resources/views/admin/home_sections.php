@@ -807,7 +807,7 @@ $currentTab = $currentTab ?? 'sections';
         const preview = document.getElementById('bannerImgPreview');
         const placeholder = document.getElementById('bannerImgPlaceholder');
         if (b.image) {
-            preview.src = b.image.startsWith('http') ? b.image : (window.APP_URL ? window.APP_URL + '/' + b.image.replace(/^\//, '') : '/' + b.image.replace(/^\//, ''));
+            preview.src = window.appAsset(b.image);
             preview.classList.remove('hidden');
             placeholder.classList.add('hidden');
         } else {
@@ -858,7 +858,7 @@ $currentTab = $currentTab ?? 'sections';
         const preview = document.getElementById('genericImgPreview');
         const placeholder = document.getElementById('genericImgPlaceholder');
         if (s.image) {
-            preview.src = s.image.startsWith('http') ? s.image : (window.APP_URL ? window.APP_URL + '/' + s.image.replace(/^\//, '') : '/' + s.image.replace(/^\//, ''));
+            preview.src = window.appAsset(s.image);
             preview.classList.remove('hidden');
             placeholder.classList.add('hidden');
         } else {

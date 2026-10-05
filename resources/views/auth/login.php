@@ -3,6 +3,7 @@ use App\Core\I18n;
 
 $isRtl = I18n::isRtl();
 $arrow = $isRtl ? 'arrow-left' : 'arrow-right';
+$otpEnabled = \App\Services\OtpService::isEnabled();
 $immersiveHeader = true;
 $authLayout = true;
 ?>
@@ -27,6 +28,7 @@ $authLayout = true;
                     <div class="flash flash--success auth-flash" role="status"><?= fnd_icon('check-circle', 18) ?><div><?= htmlspecialchars($success) ?></div></div>
                 <?php endif; ?>
 
+                <?php if ($otpEnabled): ?>
                 <div class="auth-tabs" id="loginTabs" role="tablist">
                     <button type="button" role="tab" onclick="switchLoginTab('otp')" id="tabBtnOtp" class="is-active"><?= fnd_icon('phone', 16) ?><span>الجوال و OTP</span></button>
                     <button type="button" role="tab" onclick="switchLoginTab('password')" id="tabBtnPass"><?= fnd_icon('lock-keyhole', 16) ?><span>كلمة المرور</span></button>
@@ -47,9 +49,10 @@ $authLayout = true;
                     </fieldset>
                     <button type="submit" class="button button--primary auth-submit" style="margin-top:14px">إرسال كود التحقق ومتابعة الدخول<?= fnd_icon($arrow, 19, 'directional-arrow') ?></button>
                 </form>
+                <?php endif; ?>
 
                 <!-- Password login -->
-                <form id="formPassLogin" action="<?= url('/login') ?>" method="POST" class="auth-form hidden">
+                <form id="formPassLogin" action="<?= url('/login') ?>" method="POST" class="auth-form<?= $otpEnabled ? ' hidden' : '' ?>">
                     <input type="hidden" name="login_type" value="password">
                     <fieldset>
                         <div class="form-field">
@@ -73,15 +76,9 @@ $authLayout = true;
                     <button type="submit" class="button button--primary auth-submit" style="margin-top:14px">تسجيل الدخول<?= fnd_icon($arrow, 19, 'directional-arrow') ?></button>
                 </form>
 
-                <div class="auth-demo-box">
-                    <div><span>حسابات تجريبية سريعة (Demo)</span><span class="badge">OTP: 123456</span></div>
-                    <div class="auth-demo-buttons">
-                        <button type="button" class="button button--outline auth-demo-fill" onclick="quickFillPassword('admin@tumurna.com', 'admin123')">إدارة المتجر</button>
-                        <button type="button" class="button button--outline auth-demo-fill" onclick="quickFillOtp('0555123456')">عميل (عبر OTP)</button>
-                    </div>
-                </div>
-
+                <?php if ($otpEnabled): ?>
                 <p class="auth-switch">ليس لديك حساب عميل حتى الآن؟ <a href="<?= url('/register') ?>">إنشاء حساب جديد بالهاتف</a></p>
+                <?php endif; ?>
                 <a class="auth-back" href="<?= url('/') ?>">العودة للصفحة الرئيسية للمتجر</a>
             </div>
         </div>
@@ -102,14 +99,4 @@ $authLayout = true;
         tabBtnPass.classList.toggle('is-active', !otp);
     }
 
-    function quickFillPassword(email, pass) {
-        switchLoginTab('password');
-        document.getElementById('loginEmail').value = email;
-        document.getElementById('loginPass').value = pass;
-    }
-
-    function quickFillOtp(phone) {
-        switchLoginTab('otp');
-        document.getElementById('loginPhone').value = phone;
-    }
 </script>

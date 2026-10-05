@@ -41,6 +41,9 @@ class Router
         if ($base !== '' && str_starts_with($uri, $base)) {
             $uri = substr($uri, strlen($base));
         }
+        if ($uri === '/index.php' || str_starts_with($uri, '/index.php/')) {
+            $uri = substr($uri, strlen('/index.php'));
+        }
         $uri = '/' . trim($uri, '/');
 
 

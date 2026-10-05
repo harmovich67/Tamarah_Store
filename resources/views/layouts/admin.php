@@ -27,11 +27,16 @@ if ($isSuper) {
     <script src="<?= asset('assets/js/lucide.min.js') ?>"></script>
 
     <script>
-        window.APP_URL = <?= json_encode(base_path_url()) ?>;
+        window.APP_URL = <?= json_encode(rtrim(url('/'), '/')) ?>;
+        window.ASSET_URL = <?= json_encode(base_path_url()) ?>;
         window.appUrl = function(path) {
             path = path || '';
             if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('//')) return path;
             return window.APP_URL + (path.startsWith('/') ? path : '/' + path);
+        };
+        window.appAsset = function(path) {
+            if (/^(https?:)?\/\//.test(path)) return path;
+            return window.ASSET_URL + '/' + path.replace(/^\//, '');
         };
 
     </script>
