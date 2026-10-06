@@ -17,12 +17,14 @@ $standardFee = $feeRow ? max(0.0, (float)$feeRow['value']) : 25.0;
 ?>
 <section class="commerce-page cart-page">
     <div class="container">
+        <?php if (!empty($items)): ?>
         <header class="commerce-heading">
             <span class="commerce-kicker"><?= fnd_icon('shopping-bag', 18) ?><?= $isRtl ? 'سلة تمرنا' : 'Tamrna bag' ?></span>
             <h1><?= $isRtl ? 'سلة المشتريات' : 'Shopping Cart' ?></h1>
             <p><?= $isRtl ? 'راجع أصناف التمور المختارة وأكمل طلبك' : 'Review your selected dates and complete your order' ?></p>
             <a class="commerce-back" href="<?= url('/catalog') ?>"><?= fnd_icon($arrow, 17, 'directional-arrow') ?><?= $isRtl ? 'متابعة التسوق' : 'Continue shopping' ?></a>
         </header>
+        <?php endif; ?>
 
         <?php if (!empty($items)): ?>
             <div class="free-shipping-meter <?= $isFreeShipping ? 'is-complete' : '' ?>">
@@ -114,12 +116,10 @@ $standardFee = $feeRow ? max(0.0, (float)$feeRow['value']) : 25.0;
         <?php else: ?>
             <div class="commerce-empty">
                 <div class="cart-empty">
-                    <?= fnd_icon('shopping-bag', 56, '', 1.3) ?>
-                    <h2><?= $isRtl ? 'سلة المشتريات فارغة حالياً' : 'Your shopping cart is empty' ?></h2>
-                    <p><?= $isRtl
-                        ? 'لم تقم بإضافة أي أصناف من التمور الفاخرة بعد. تصفح تشكيلتنا وأضف ما يحلو لك إلى سلتك.'
-                        : 'You haven’t added any dates yet. Discover our collections and add your favorites.' ?></p>
-                    <a href="<?= url('/catalog') ?>" class="button button--primary"><?= $isRtl ? 'استعراض أقسام التمور' : 'Explore date catalog' ?><?= fnd_icon($arrow, 18, 'directional-arrow') ?></a>
+                    <?= fnd_icon('shopping-bag', 44, '', 1) ?>
+                    <h3><?= $isRtl ? 'سلتك بانتظار اختياراتك' : 'Your bag awaits' ?></h3>
+                    <p><?= $isRtl ? 'أضف منتجات من المتجر لتبدأ طلبك.' : 'Add a product to start your order.' ?></p>
+                    <a href="<?= url('/catalog') ?>" class="button button--primary"><?= $isRtl ? 'متابعة التصفح' : 'Continue browsing' ?></a>
                 </div>
             </div>
         <?php endif; ?>

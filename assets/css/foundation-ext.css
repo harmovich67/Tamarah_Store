@@ -37,15 +37,6 @@ body { min-height: 100dvh; }
 .account-name { font-size: var(--text-caption); white-space: nowrap; }
 
 /* mobile drawer + search dialog */
-.menu-drawer .drawer-scroll { padding-block: var(--space-4); }
-.menu-drawer .mobile-nav a { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--color-border); font-size: var(--text-body); }
-.menu-drawer .mobile-nav a[aria-current=page] { color: var(--color-brand-green-700); font-weight: 600; }
-.menu-drawer .mobile-nav { gap: 0; padding-block: 0; }
-.drawer-account { display: grid; gap: var(--space-3); padding-block: var(--space-4); border-bottom: 1px solid var(--color-border); }
-.drawer-account .drawer-account-user { display: flex; align-items: center; gap: var(--space-3); }
-.drawer-account .account-avatar { width: 46px; height: 46px; font-size: 18px; border-width: 2px; }
-.drawer-account small { color: var(--color-text-secondary); }
-.drawer-account .drawer-account-links { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
 .search-dialog { max-width: 38rem; }
 .search-dialog form { display: grid; gap: var(--space-4); margin-top: var(--space-5); }
 .search-dialog .catalog-search { max-width: none; }
@@ -439,6 +430,8 @@ html, body, button, input, select, textarea { font-family: var(--font-body); }
 .cart-drawer .cart-empty h3 { font-family: var(--font-body); font-size: var(--text-h4); }
 .cart-drawer .cart-empty svg { color: var(--color-gold-500); }
 .cart-drawer .drawer-scroll { padding-block-start: var(--space-2); }
+/* empty bag sits in the middle of the drawer, as in the reference */
+.cart-drawer .drawer-scroll:has(> .cart-empty) { display: flex; flex-direction: column; padding-inline: 0; }
 .cart-drawer .cart-item h3 { font-size: var(--text-body); font-weight: 600; }
 
 

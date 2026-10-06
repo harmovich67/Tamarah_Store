@@ -340,47 +340,19 @@ $userInitial = $user ? mb_substr(trim((string)($user['name'] ?? 'U')), 0, 1) : '
     <div class="cart-feedback" role="status" aria-live="polite" aria-atomic="true"><span id="tumurna-toast"></span></div>
 </div>
 
-<!-- MOBILE MENU DRAWER -->
+<!-- MOBILE MENU DIALOG -->
 <div class="global-overlay hidden" data-overlay></div>
-<aside class="drawer menu-drawer hidden" id="menu-drawer" dir="<?= $isRtl ? 'rtl' : 'ltr' ?>" role="dialog" aria-modal="true" aria-label="<?= $isEn ? 'Menu' : 'القائمة' ?>">
+<div class="dialog menu-dialog hidden" id="menu-drawer" dir="<?= $isRtl ? 'rtl' : 'ltr' ?>" role="dialog" aria-modal="true" aria-labelledby="menu-dialog-title">
     <div class="dialog-heading">
-        <h2><?= $isEn ? 'Menu' : 'القائمة' ?></h2>
-        <button type="button" class="button button--icon" data-close aria-label="<?= $isEn ? 'Close' : 'إغلاق' ?>"><?= fnd_icon('x', 21) ?></button>
+        <h2 id="menu-dialog-title"><?= $isEn ? 'Menu' : 'القائمة' ?></h2>
+        <button type="button" class="button button--icon" data-close aria-label="<?= $isEn ? 'Close' : 'إغلاق' ?>"><?= fnd_icon('x', 22) ?></button>
     </div>
-    <div class="drawer-scroll">
-        <div class="drawer-account">
-            <?php if ($user): ?>
-                <div class="drawer-account-user">
-                    <span class="account-avatar"><?= esc_html($userInitial) ?></span>
-                    <div>
-                        <strong><?= esc_html($user['name'] ?? '') ?></strong><br>
-                        <small dir="ltr"><?= esc_html($user['phone'] ?? '') ?></small>
-                    </div>
-                </div>
-                <div class="drawer-account-links">
-                    <a class="button button--outline button--sm" href="<?= url('/profile') ?>"><?= $isEn ? 'My Profile' : 'الملف الشخصي' ?></a>
-                    <a class="button button--outline button--sm" href="<?= url('/profile/orders') ?>"><?= $isEn ? 'My Orders' : 'طلباتي' ?></a>
-                    <?php if (($user['role_id'] ?? 0) === 1): ?>
-                        <a class="button button--primary button--sm" style="grid-column:1/-1" href="<?= url('/admin') ?>"><?= $isEn ? 'Dashboard' : 'لوحة الإدارة' ?></a>
-                    <?php endif; ?>
-                </div>
-            <?php else: ?>
-                <span class="muted"><?= $isEn ? 'Welcome to Tamrna' : 'أهلاً بك في تمرنا' ?></span>
-                <a class="button button--primary" href="<?= url('/login') ?>"><?= fnd_icon('user-round', 18) ?><?= $isEn ? 'Sign In / Register' : 'تسجيل الدخول / إنشاء حساب' ?></a>
-            <?php endif; ?>
-        </div>
-        <nav class="mobile-nav" aria-label="<?= $isEn ? 'Main menu' : 'القائمة' ?>">
-            <?php foreach ($navItems as [$href, $label, $active, $newTab]): ?>
-                <a href="<?= esc_attr(url($href)) ?>" <?= $active ? 'aria-current="page"' : '' ?> <?= $newTab ? 'target="_blank" rel="noopener"' : '' ?>><span><?= esc_html($label) ?></span><?= fnd_icon('arrow-left', 18, 'directional-arrow') ?></a>
-            <?php endforeach; ?>
-            <a href="<?= url('/wishlist') ?>"><span><?= $isEn ? 'My Wishlist' : 'قائمة المفضلة' ?></span><?= fnd_icon('heart', 18) ?></a>
-            <a href="<?= url('/cart') ?>"><span><?= $isEn ? 'Shopping Cart' : 'سلة المشتريات' ?></span><?= fnd_icon('shopping-bag', 18) ?></a>
-        </nav>
-    </div>
-    <div class="drawer-bottom">
-        <a class="button button--outline" href="<?= url('/lang/' . $otherLocale) ?>"><?= fnd_icon('globe', 18) ?><?= $currentLocale === 'ar' ? 'English (EN)' : 'عربي (AR)' ?></a>
-    </div>
-</aside>
+    <nav class="mobile-nav" aria-label="<?= $isEn ? 'Main menu' : 'القائمة' ?>">
+        <?php foreach ($navItems as [$href, $label, $active, $newTab]): ?>
+            <a href="<?= esc_attr(url($href)) ?>" <?= $active ? 'aria-current="page"' : '' ?> <?= $newTab ? 'target="_blank" rel="noopener"' : '' ?>><?= esc_html($label) ?></a>
+        <?php endforeach; ?>
+    </nav>
+</div>
 
 <!-- CART DRAWER -->
 <aside class="drawer cart-drawer hidden" id="cart-drawer" dir="<?= $isRtl ? 'rtl' : 'ltr' ?>" role="dialog" aria-modal="true" aria-labelledby="cart-drawer-title">
@@ -415,6 +387,9 @@ $userInitial = $user ? mb_substr(trim((string)($user['name'] ?? 'U')), 0, 1) : '
 
 <!-- JavaScript Assets -->
 <script src="<?= asset('assets/js/tumurna.js') ?>?v=<?= @filemtime(__DIR__ . '/../../../assets/js/tumurna.js') ?>"></script>
+<?php if (!$isEn): ?>
+<script src="<?= asset('assets/js/foundation-digits.js') ?>?v=<?= @filemtime(__DIR__ . '/../../../assets/js/foundation-digits.js') ?>"></script>
+<?php endif; ?>
 <script>
     // Header: switch immersive header to its solid state on scroll
     (function () {
@@ -489,9 +464,9 @@ $userInitial = $user ? mb_substr(trim((string)($user['name'] ?? 'U')), 0, 1) : '
     // ---- Cart drawer ------------------------------------------------------
     (function () {
         var T = <?= json_encode([
-            'empty' => $isEn ? 'Your cart is empty' : 'السلة فارغة',
-            'emptyText' => $isEn ? 'Add products to start your order.' : 'أضف منتجات من المتجر لتبدأ طلبك.',
-            'browse' => $isEn ? 'Browse products' : 'تصفح المنتجات',
+            'empty' => $isEn ? 'Your bag awaits' : 'سلتك بانتظار اختياراتك',
+            'emptyText' => $isEn ? 'Add a product to start your order.' : 'أضف منتجات من المتجر لتبدأ طلبك.',
+            'browse' => $isEn ? 'Continue browsing' : 'متابعة التصفح',
             'subtotal' => $isEn ? 'Subtotal' : 'المجموع الفرعي',
             'discount' => $isEn ? 'Discount' : 'الخصم',
             'note' => $isEn ? 'Shipping is calculated at checkout based on your address and delivery method.' : 'يُحدَّد الشحن عند إتمام الطلب وفق العنوان وطريقة التوصيل.',
