@@ -5,7 +5,7 @@
 $locale = \App\Core\I18n::getLocale();
 $isRtl = \App\Core\I18n::isRtl();
 $products = $products ?? [];
-$arrow = $isRtl ? 'arrow-left' : 'arrow-right';
+$arrow = 'arrow-left'; // mirrored for LTR by .directional-arrow
 ?>
 <section class="commerce-page wishlist-page">
     <div class="container">

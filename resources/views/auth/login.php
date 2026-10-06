@@ -4,9 +4,10 @@ use App\Core\I18n;
 $locale = I18n::getLocale();
 $isRtl = I18n::isRtl();
 $isEn = $locale === 'en';
-$arrow = $isRtl ? 'arrow-left' : 'arrow-right';
+$arrow = 'arrow-left'; // mirrored for LTR by .directional-arrow
 $otpEnabled = \App\Services\OtpService::isEnabled();
 $immersiveHeader = true;
+$pageCss = ['auth']; // page layer: foundation-auth.css
 $authLayout = true;
 $reqPath = rtrim(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '', '/');
 $adminLogin = str_ends_with($reqPath, '/admin/login');
@@ -21,7 +22,8 @@ $subheadingText = $adminLogin
     : ($isEn ? 'Sign in to track luxury date orders, cold delivery, and addresses' : 'سجل دخولك لمتابعة طلبات التمور الفاخرة، الشحن وعناوين التوصيل');
 ?>
 <div class="auth-page">
-    <div class="auth-scene"><img src="<?= asset('assets/images/home/hero.webp') ?>" alt="" style="position:absolute;inset:0;width:100%;height:100%"></div>
+    <div class="auth-scene"><img src="<?= asset('assets/images/home/hero.webp') ?>" alt=""></div>
+    <div class="auth-cream"></div>
     <section class="auth-main">
         <div class="auth-card-column">
             <div class="auth-card">
@@ -110,6 +112,7 @@ $subheadingText = $adminLogin
         </div>
         <?php include __DIR__ . '/../components/auth_story.php'; ?>
     </section>
+    <?php include __DIR__ . '/../components/auth_label.php'; ?>
 </div>
 
 <script>

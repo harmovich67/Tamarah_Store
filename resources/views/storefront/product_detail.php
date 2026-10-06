@@ -59,7 +59,7 @@ $ratingLabel = $isRtl
     : 'Rated ' . number_format($ratingVal, 1) . ' out of 5' . ($ratingCount ? ", based on {$ratingCount} reviews" : '');
 $shareUrl = full_url('/product/' . ($product['slug'] ?? $product['id']));
 $shareText = $productName . ' — ' . ($isRtl ? 'تمرنا' : 'Tamrna');
-$arrowBack = $isRtl ? 'arrow-left' : 'arrow-right';
+$arrowBack = 'arrow-left'; // mirrored for LTR by .directional-arrow
 $sepChar = $isRtl ? '‹' : '›';
 $stockState = $isOutOfStock ? 'stock-out' : ($stockQty <= 10 ? 'stock-low' : 'stock-ok');
 $stockLabel = $isOutOfStock

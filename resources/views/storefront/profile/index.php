@@ -5,7 +5,7 @@ $isRtl = I18n::isRtl();
 $locale = $locale ?? I18n::getLocale();
 $en = $locale === 'en';
 $currency = $en ? 'SAR' : 'ر.س';
-$arrow = $isRtl ? 'arrow-left' : 'arrow-right';
+$arrow = 'arrow-left'; // mirrored for LTR by .directional-arrow
 
 $accountActive = 'profile';
 $accountHeading = $en ? 'Profile Overview' : 'الملف الشخصي';
@@ -15,17 +15,6 @@ include __DIR__ . '/../../components/account_shell_open.php';
 <?php if (!empty($success)): ?>
     <div class="flash flash--success" role="status"><?= fnd_icon('check-circle', 18) ?><div><?= htmlspecialchars($success) ?></div></div>
 <?php endif; ?>
-
-<div class="account-summary-card">
-    <span class="account-avatar"><?= esc_html(mb_substr($user['name'] ?? 'U', 0, 1)) ?></span>
-    <div>
-        <h2><?= htmlspecialchars($user['name']) ?></h2>
-        <a href="tel:<?= esc_attr($user['phone'] ?? '') ?>" dir="ltr"><?= htmlspecialchars($user['phone'] ?? '-') ?></a>
-        <?php if (!empty($user['email'])): ?><a href="mailto:<?= esc_attr($user['email']) ?>"><?= htmlspecialchars($user['email']) ?></a><?php endif; ?>
-        <small><?= fnd_icon('badge-check', 14) ?><?= $en ? 'Verified Account' : 'حساب موثق' ?></small>
-    </div>
-    <a class="button button--outline" href="<?= url('/profile/orders') ?>"><?= fnd_icon('package', 18) ?><?= $en ? 'My Orders' : 'طلباتي' ?> (<?= (int)$ordersCount ?>)</a>
-</div>
 
 <div class="account-profile-grid">
     <!-- Personal info -->

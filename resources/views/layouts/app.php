@@ -133,6 +133,10 @@ $userInitial = $user ? mb_substr(trim((string)($user['name'] ?? 'U')), 0, 1) : '
     <!-- Tamrna Foundation design system (fonts are bundled in assets/fonts) -->
     <link rel="preload" href="<?= asset('assets/fonts/thmanyah-sans-400.woff2') ?>" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="<?= asset('assets/css/foundation.css') ?>?v=<?= @filemtime(__DIR__ . '/../../../assets/css/foundation.css') ?>">
+    <?php // Page layers (home / gift / auth) load only where the design uses them, as in the reference app. ?>
+    <?php foreach ((array)($pageCss ?? []) as $pageCssName): ?>
+    <link rel="stylesheet" href="<?= asset('assets/css/foundation-' . $pageCssName . '.css') ?>?v=<?= @filemtime(__DIR__ . '/../../../assets/css/foundation-' . $pageCssName . '.css') ?>">
+    <?php endforeach; ?>
     <link rel="stylesheet" href="<?= asset('assets/css/foundation-ext.css') ?>?v=<?= @filemtime(__DIR__ . '/../../../assets/css/foundation-ext.css') ?>">
     <?php if (!empty($extra_head)) echo $extra_head; ?>
 

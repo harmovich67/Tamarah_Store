@@ -4,12 +4,14 @@ use App\Core\I18n;
 $locale = I18n::getLocale();
 $isRtl = I18n::isRtl();
 $isEn = $locale === 'en';
-$arrow = $isRtl ? 'arrow-left' : 'arrow-right';
+$arrow = 'arrow-left'; // mirrored for LTR by .directional-arrow
 $immersiveHeader = true;
+$pageCss = ['auth'];
 $authLayout = true;
 ?>
 <div class="auth-page">
-    <div class="auth-scene"><img src="<?= asset('assets/images/home/hero.webp') ?>" alt="" style="position:absolute;inset:0;width:100%;height:100%"></div>
+    <div class="auth-scene"><img src="<?= asset('assets/images/home/hero.webp') ?>" alt=""></div>
+    <div class="auth-cream"></div>
     <section class="auth-main">
         <div class="auth-card-column">
             <div class="auth-card">
@@ -70,4 +72,5 @@ $authLayout = true;
         </div>
         <?php include __DIR__ . '/../components/auth_story.php'; ?>
     </section>
+    <?php include __DIR__ . '/../components/auth_label.php'; ?>
 </div>

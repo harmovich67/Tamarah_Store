@@ -307,9 +307,25 @@ class ProfileController
             ORDER BY o.id DESC
         ", [$userId, $userPhone, $userEmail]);
 
+        // Product thumbnails for the order cards (one extra query for the whole list)
+        $orderItems = [];
+        if ($orders) {
+            $ids = array_map(fn($o) => (int)$o['id'], $orders);
+            $marks = implode(',', array_fill(0, count($ids), '?'));
+            $rows = Database::fetchAll("
+                SELECT oi.order_id, oi.product_name, oi.quantity, p.slug, p.featured_image
+                FROM order_items oi
+                LEFT JOIN products p ON p.id = oi.product_id
+                WHERE oi.order_id IN ($marks)
+                ORDER BY oi.id ASC
+            ", $ids);
+            foreach ($rows as $row) $orderItems[(int)$row['order_id']][] = $row;
+        }
+
         Response::view('storefront/profile/orders', [
             'user' => $user,
-            'orders' => $orders
+            'orders' => $orders,
+            'orderItems' => $orderItems
         ]);
     }
 

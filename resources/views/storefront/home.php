@@ -4,6 +4,7 @@
  * Controlled via Admin Home CMS & Slider Manager (/admin/home-sections)
  */
 $locale = \App\Core\I18n::getLocale();
+$pageCss = ['home']; // page layer: foundation-home.css
 $isRtl = \App\Core\I18n::isRtl();
 
 $banners = $banners ?? [];
@@ -155,7 +156,7 @@ $renderFeatureStrip = function (array $sec) use ($isRtl, $defaultFeaturesAr, $de
 };
 
 $palm = fn() => fnd_icon('tree-palm', 24, 'palm-decoration', 1.1);
-$arrow = $isRtl ? 'arrow-left' : 'arrow-right';
+$arrow = 'arrow-left'; // mirrored for LTR by .directional-arrow
 ?>
 
 <?php /* ===================== 1. HERO (CMS banners) ===================== */ ?>
@@ -267,6 +268,10 @@ $arrow = $isRtl ? 'arrow-left' : 'arrow-right';
                             </a>
                         <?php endforeach; ?>
                     </div>
+                    <div class="category-scroll-controls">
+                        <button type="button" class="button button--icon" data-cat-scroll="-1" disabled aria-label="<?= $isRtl ? 'الأقسام السابقة' : 'Previous categories' ?>"><?= fnd_icon($isRtl ? 'chevron-right' : 'chevron-left', 24) ?></button>
+                        <button type="button" class="button button--icon" data-cat-scroll="1" aria-label="<?= $isRtl ? 'الأقسام التالية' : 'Next categories' ?>"><?= fnd_icon($isRtl ? 'chevron-left' : 'chevron-right', 24) ?></button>
+                    </div>
                 </div>
 
                 <div class="home-section-action">
@@ -290,7 +295,26 @@ $arrow = $isRtl ? 'arrow-left' : 'arrow-right';
                 </article>
             </section>
 
-        <?php /* ===================== 3. FEATURED PRODUCTS ===================== */ ?>
+        <script>
+(function () {
+    var scroller = document.querySelector('.category-collection .home-categories');
+    var buttons = document.querySelectorAll('[data-cat-scroll]');
+    if (!scroller || !buttons.length) return;
+    var rtl = document.documentElement.dir === 'rtl';
+    var prev = document.querySelector('[data-cat-scroll="-1"]');
+    scroller.addEventListener('scroll', function () { prev.disabled = Math.abs(scroller.scrollLeft) < 1; }, { passive: true });
+    buttons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var step = parseInt(btn.getAttribute('data-cat-scroll'), 10);
+            var max = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
+            var next = Math.max(0, Math.min(max, Math.abs(scroller.scrollLeft) + step * scroller.clientWidth * 0.75));
+            scroller.scrollTo({ left: rtl ? -next : next, behavior: 'smooth' });
+        });
+    });
+})();
+</script>
+
+<?php /* ===================== 3. FEATURED PRODUCTS ===================== */ ?>
         <?php elseif ($secKey === 'featured_products' && !empty($products)): ?>
             <section class="home-section" id="featured">
                 <div class="section-title section-title--center section-title--palms">

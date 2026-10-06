@@ -7,6 +7,7 @@
 use App\Services\GiftCardService;
 
 $locale = \App\Core\I18n::getLocale();
+$pageCss = ['gift']; // page layer: foundation-gift.css
 $isRtl = \App\Core\I18n::isRtl();
 $en = $locale === 'en';
 $cur = currency();

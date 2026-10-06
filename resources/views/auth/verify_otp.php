@@ -5,11 +5,13 @@ $locale = I18n::getLocale();
 $isRtl = I18n::isRtl();
 $isEn = $locale === 'en';
 $immersiveHeader = true;
+$pageCss = ['auth'];
 $authLayout = true;
 $isAr = $locale === 'ar';
 ?>
 <div class="auth-page">
-    <div class="auth-scene"><img src="<?= asset('assets/images/home/hero.webp') ?>" alt="" style="position:absolute;inset:0;width:100%;height:100%"></div>
+    <div class="auth-scene"><img src="<?= asset('assets/images/home/hero.webp') ?>" alt=""></div>
+    <div class="auth-cream"></div>
     <section class="auth-main">
         <div class="auth-card-column">
             <div class="auth-card">
@@ -29,13 +31,11 @@ $isAr = $locale === 'ar';
 
                 <form action="<?= url('/verify-otp') ?>" method="POST" id="otpForm" class="auth-form" style="margin-top:16px">
                     <input type="hidden" name="phone" value="<?= htmlspecialchars((string)($phone ?? '')) ?>">
-                    <p class="auth-otp-label"><?= $isAr ? 'أدخل رمز التحقق (6 أرقام)' : 'Enter 6-digit verification code' ?></p>
-                    <div class="auth-otp-digits" dir="ltr">
-                        <?php for ($i = 1; $i <= 6; $i++): ?>
-                            <input class="input otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="digit-<?= $i ?>" data-index="<?= $i ?>" autocomplete="off" aria-label="<?= $i ?>">
-                        <?php endfor; ?>
+                    <div class="form-field">
+                        <label for="combinedOtpInput"><?= $isAr ? 'رمز التحقق' : 'Verification code' ?><span aria-hidden="true"> *</span></label>
+                        <input class="input otp-input" type="text" id="combinedOtpInput" name="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9٠-٩۰-۹]{6}" dir="ltr" placeholder="······" required>
+                        <p class="field-hint"><?= $isAr ? 'أدخل الرمز المكوّن من ٦ أرقام. صلاحيته ٥ دقائق.' : 'Enter the 6-digit code. It expires in 5 minutes.' ?></p>
                     </div>
-                    <input type="hidden" name="otp" id="combinedOtpInput" value="">
                     <button type="submit" id="submitOtpBtn" class="button button--primary auth-submit" style="margin-top:18px">
                         <?= fnd_icon('check', 19) ?><?= $isAr ? 'تأكيد الحساب والدخول' : 'Verify & Continue' ?>
                     </button>
@@ -55,63 +55,31 @@ $isAr = $locale === 'ar';
         </div>
         <?php include __DIR__ . '/../components/auth_story.php'; ?>
     </section>
+    <?php include __DIR__ . '/../components/auth_label.php'; ?>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const digits = document.querySelectorAll('.otp-digit');
     const combinedInput = document.getElementById('combinedOtpInput');
     const otpForm = document.getElementById('otpForm');
     const resendBtn = document.getElementById('resendBtn');
     const resendTimer = document.getElementById('resendTimer');
+    const arabicDigits = '٠١٢٣٤٥٦٧٨٩', persianDigits = '۰۱۲۳۴۵۶۷۸۹';
 
-    if (digits[0]) digits[0].focus();
+    if (combinedInput) combinedInput.focus();
 
-    function updateCombined() {
-        let val = '';
-        digits.forEach(d => val += d.value);
+    // Accept Arabic-Indic digits, keep digits only, submit as soon as the code is complete
+    combinedInput.addEventListener('input', () => {
+        const val = combinedInput.value
+            .replace(/[٠-٩]/g, d => String(arabicDigits.indexOf(d)))
+            .replace(/[۰-۹]/g, d => String(persianDigits.indexOf(d)))
+            .replace(/\D/g, '')
+            .slice(0, 6);
         combinedInput.value = val;
-    }
-
-    digits.forEach((digit, idx) => {
-        digit.addEventListener('input', (e) => {
-            const val = e.target.value.replace(/\D/g, '');
-            e.target.value = val ? val.slice(-1) : '';
-            updateCombined();
-            if (e.target.value && idx < digits.length - 1) {
-                digits[idx + 1].focus();
-            }
-            if (combinedInput.value.length === 6) {
-                otpForm.submit();
-            }
-        });
-
-        digit.addEventListener('keydown', (e) => {
-            if (e.key === 'Backspace' && !digit.value && idx > 0) {
-                digits[idx - 1].focus();
-            }
-        });
-
-        digit.addEventListener('paste', (e) => {
-            e.preventDefault();
-            const pasteData = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
-            if (pasteData) {
-                pasteData.split('').forEach((char, i) => {
-                    if (digits[i]) digits[i].value = char;
-                });
-                updateCombined();
-                if (digits[Math.min(pasteData.length, digits.length - 1)]) {
-                    digits[Math.min(pasteData.length, digits.length - 1)].focus();
-                }
-                if (combinedInput.value.length === 6) {
-                    otpForm.submit();
-                }
-            }
-        });
+        if (val.length === 6) otpForm.submit();
     });
 
     otpForm.addEventListener('submit', (e) => {
-        updateCombined();
         if (combinedInput.value.length < 6) {
             e.preventDefault();
             if (typeof showTumurnaToast === 'function') {

@@ -10,7 +10,7 @@ $items = $cart['items'] ?? [];
 $isFreeShipping = !empty($cart['is_free_shipping']);
 $freeShippingProgress = $cart['free_shipping_progress'] ?? 0;
 $freeShippingRemaining = $cart['free_shipping_remaining'] ?? 0;
-$arrow = $isRtl ? 'arrow-left' : 'arrow-right';
+$arrow = 'arrow-left'; // mirrored for LTR by .directional-arrow
 // Standard shipping fee from the dashboard (Settings > Shipping); the city-specific fee is applied at checkout
 $feeRow = \Database\Database::fetchOne("SELECT `value` FROM settings WHERE `key` = 'shipping_standard_fee'");
 $standardFee = $feeRow ? max(0.0, (float)$feeRow['value']) : 25.0;
@@ -18,10 +18,10 @@ $standardFee = $feeRow ? max(0.0, (float)$feeRow['value']) : 25.0;
 <section class="commerce-page cart-page">
     <div class="container">
         <header class="commerce-heading">
-            <span class="commerce-kicker"><?= fnd_icon('shopping-bag', 16) ?><?= $isRtl ? 'سلتك' : 'Your bag' ?></span>
+            <span class="commerce-kicker"><?= fnd_icon('shopping-bag', 18) ?><?= $isRtl ? 'سلة تمرنا' : 'Tamrna bag' ?></span>
             <h1><?= $isRtl ? 'سلة المشتريات' : 'Shopping Cart' ?></h1>
             <p><?= $isRtl ? 'راجع أصناف التمور المختارة وأكمل طلبك' : 'Review your selected dates and complete your order' ?></p>
-            <a class="commerce-back" href="<?= url('/catalog') ?>"><?= $isRtl ? 'متابعة التسوق' : 'Continue shopping' ?></a>
+            <a class="commerce-back" href="<?= url('/catalog') ?>"><?= fnd_icon($arrow, 17, 'directional-arrow') ?><?= $isRtl ? 'متابعة التسوق' : 'Continue shopping' ?></a>
         </header>
 
         <?php if (!empty($items)): ?>
@@ -63,8 +63,7 @@ $standardFee = $feeRow ? max(0.0, (float)$feeRow['value']) : 25.0;
                                         <button type="button" class="button button--icon" onclick="updateCartItemQty('<?= esc_attr($item['key']) ?>', <?= $item['quantity'] + 1 ?>)" aria-label="<?= $isRtl ? 'زيادة الكمية' : 'Increase' ?>"><?= fnd_icon('plus', 16) ?></button>
                                     </div>
                                 </div>
-                                <div class="cart-line-total"><?= $item['subtotal_formatted'] ?></div>
-                                <button type="button" class="button button--icon cart-item-remove" onclick="removeCartItem('<?= esc_attr($item['key']) ?>')" title="<?= $isRtl ? 'حذف من السلة' : 'Remove from cart' ?>" aria-label="<?= $isRtl ? 'حذف من السلة' : 'Remove from cart' ?>"><?= fnd_icon('x', 18) ?></button>
+                                <button type="button" class="button button--icon remove-item" onclick="removeCartItem('<?= esc_attr($item['key']) ?>')" title="<?= $isRtl ? 'حذف من السلة' : 'Remove from cart' ?>" aria-label="<?= ($isRtl ? 'حذف: ' : 'Remove: ') . esc_attr($item['product_name']) ?>"><?= fnd_icon('trash-2', 18) ?></button>
                             </li>
                         <?php endforeach; ?>
                     </ul>

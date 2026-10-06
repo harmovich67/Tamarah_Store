@@ -10,7 +10,7 @@ $cities = $cities ?? \App\Controllers\CheckoutController::saudiCities();
 $shippingFee = $shippingFee ?? (($cart['subtotal'] >= 300) ? 0.0 : 25.0);
 $total = $total ?? max(0.0, (float)$cart['total'] + $shippingFee);
 $defaultAddress = $defaultAddress ?? null;
-$arrow = $isRtl ? 'arrow-left' : 'arrow-right';
+$arrow = 'arrow-left'; // mirrored for LTR by .directional-arrow
 $checkoutUser = \App\Core\Auth::user();
 $checkoutName = preg_split('/\s+/u', trim((string)($checkoutUser['name'] ?? '')), 2);
 $checkoutFirstName = $checkoutName[0] ?? '';

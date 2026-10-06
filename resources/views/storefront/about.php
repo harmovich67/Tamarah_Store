@@ -1,149 +1,513 @@
 <?php
 /**
- * Tamrna Foundation - About Us View
+ * Tamrna Foundation - About page (latest storefront design).
+ * The editorial copy lives in the JSON block below so every section stays in sync with the design.
  */
 $locale = \App\Core\I18n::getLocale();
 $isRtl = \App\Core\I18n::isRtl();
-$arrow = $isRtl ? 'arrow-left' : 'arrow-right';
+$ar = $isRtl;
+$arrow = 'arrow-left'; // mirrored for LTR by .directional-arrow
+$c = json_decode(<<<'JSON'
+{
+ "hero": {
+  "eyebrow": {
+   "ar": "من نحن",
+   "en": "Our story"
+  },
+  "title": {
+   "ar": "تراثٌ عريق..\nمن جذورنا إلى آفاق المستقبل",
+   "en": "A rich heritage.\nFrom our roots to the horizon."
+  },
+  "description": {
+   "ar": "في تمرنا نؤمن أن التمر أكثر من غذاء؛ إنه قصة أرض وهوية أصيلة. نختار بعناية لنقدّم تجربة تليق بالضيافة السعودية.",
+   "en": "At Tamrna, dates are more than food. They carry the story of our land and identity, selected with care for true Saudi hospitality."
+  },
+  "action": {
+   "ar": "اكتشف قصتنا",
+   "en": "Discover our story"
+  },
+  "image": "/images/home/heritage.webp"
+ },
+ "story": {
+  "eyebrow": {
+   "ar": "قصتنا",
+   "en": "Our story"
+  },
+  "title": {
+   "ar": "من جذورنا إلى موائد العالم",
+   "en": "From our roots to tables everywhere"
+  },
+  "description": {
+   "ar": "بدأت تمرنا برؤية بسيطة: أن نشارك العالم جودة التمور السعودية وأصالتها. نعمل بعناية مع مصادر محلية، ونقدّم تجربة تجمع التراث السعودي بالتجارة الحديثة.",
+   "en": "Tamrna began with a simple vision: to share the quality and heritage of Saudi dates through a modern, thoughtful shopping experience."
+  },
+  "image": "/images/home/ajwa.webp",
+  "imageAlt": {
+   "ar": "تمور سعودية مختارة في وعاء تراثي",
+   "en": "Selected Saudi dates in a heritage bowl"
+  }
+ },
+ "pillars": [
+  {
+   "id": "quality",
+   "icon": "award",
+   "title": {
+    "ar": "جودة أصيلة",
+    "en": "Authentic quality"
+   },
+   "description": {
+    "ar": "اختيار يليق بالضيافة",
+    "en": "Chosen for hospitality"
+   }
+  },
+  {
+   "id": "trust",
+   "icon": "heart",
+   "title": {
+    "ar": "ثقة مستمرة",
+    "en": "Lasting trust"
+   },
+   "description": {
+    "ar": "عناية في كل تجربة",
+    "en": "Care in every experience"
+   }
+  },
+  {
+   "id": "community",
+   "icon": "people",
+   "title": {
+    "ar": "مجتمع أكبر",
+    "en": "A wider community"
+   },
+   "description": {
+    "ar": "روابط تبدأ من الأرض",
+    "en": "Connections rooted in the land"
+   }
+  },
+  {
+   "id": "sourcing",
+   "icon": "sprout",
+   "title": {
+    "ar": "مصدر محلي",
+    "en": "Local sourcing"
+   },
+   "description": {
+    "ar": "من مزارع المملكة",
+    "en": "From farms across the Kingdom"
+   }
+  }
+ ],
+ "stats": [
+  {
+   "id": "reach",
+   "icon": "globe",
+   "label": {
+    "ar": "نطاق الوصول",
+    "en": "Reach"
+   },
+   "value": {
+    "ar": "مدن المملكة ودول الخليج",
+    "en": "Saudi cities and the Gulf states"
+   }
+  },
+  {
+   "id": "cities",
+   "icon": "pin",
+   "label": {
+    "ar": "مدن نخدمها",
+    "en": "Cities served"
+   },
+   "value": {
+    "ar": "جميع مدن المملكة",
+    "en": "Every city in the Kingdom"
+   }
+  },
+  {
+   "id": "express",
+   "icon": "truck",
+   "label": {
+    "ar": "توصيل سريع",
+    "en": "Express delivery"
+   },
+   "value": {
+    "ar": "داخل الأحساء",
+    "en": "Within Al Ahsa"
+   }
+  },
+  {
+   "id": "farms",
+   "icon": "palm",
+   "label": {
+    "ar": "مزارع معتمدة",
+    "en": "Approved farms"
+   },
+   "value": {
+    "ar": "مزارع الأحساء والقصيم والمدينة",
+    "en": "Al Ahsa, Qassim and Madinah farms"
+   }
+  }
+ ],
+ "values": [
+  {
+   "id": "experience",
+   "icon": "palm",
+   "title": {
+    "ar": "خبرة تمتد لسنوات",
+    "en": "Years of experience"
+   },
+   "description": {
+    "ar": "خبرة اكتسبناها من شغفنا بالتمور، وحرصنا المستمر على تقديم الأفضل.",
+    "en": "Experience built on our passion for dates and a constant drive to offer the best."
+   }
+  },
+  {
+   "id": "honesty",
+   "icon": "shield",
+   "title": {
+    "ar": "الصدق والشفافية",
+    "en": "Honesty and clarity"
+   },
+   "description": {
+    "ar": "نوضح ما نقدمه ونجعل الثقة أساس كل تجربة.",
+    "en": "We communicate clearly and make trust central to every experience."
+   }
+  },
+  {
+   "id": "customers",
+   "icon": "heart",
+   "title": {
+    "ar": "رضا عملائنا",
+    "en": "Customer care"
+   },
+   "description": {
+    "ar": "نصغي لعملائنا ونصمم تجربة تليق بتوقعاتهم.",
+    "en": "We listen carefully and shape an experience worthy of our customers."
+   }
+  },
+  {
+   "id": "quality",
+   "icon": "leaf",
+   "title": {
+    "ar": "الجودة أولًا",
+    "en": "Quality first"
+   },
+   "description": {
+    "ar": "نختار بعناية ونهتم بكل تفصيل من المصدر إلى الضيافة.",
+    "en": "We care for every detail, from source to table."
+   }
+  }
+ ],
+ "performance": {
+  "eyebrow": {
+   "ar": "أرقامنا",
+   "en": "Our numbers"
+  },
+  "title": {
+   "ar": "ثقة تصنعها الأرقام",
+   "en": "Numbers that build trust"
+  },
+  "description": {
+   "ar": "مؤشرات نتابعها باستمرار لنحافظ على مستوى الجودة والخدمة.",
+   "en": "Indicators we track continuously to sustain our quality and service."
+  },
+  "items": [
+   {
+    "id": "returns",
+    "icon": "package",
+    "value": "0.3%",
+    "title": {
+     "ar": "مرتجعات محدودة",
+     "en": "Limited returns"
+    },
+    "description": {
+     "ar": "إذ نعمل على فحص كافة المنتجات؛ لضمان جودتها والتأكد من سلامتها",
+     "en": "We inspect every product to confirm its quality and safety."
+    }
+   },
+   {
+    "id": "repeat",
+    "icon": "repeat",
+    "value": "38%",
+    "title": {
+     "ar": "معدل تكرار الشراء",
+     "en": "Repeat purchase rate"
+    },
+    "description": {
+     "ar": "وهي نسبة عالية تكشف عن مدى رضى العميل وثقته",
+     "en": "A high rate that reflects customer satisfaction and trust."
+    }
+   },
+   {
+    "id": "years",
+    "icon": "fingerprint",
+    "value": "+25",
+    "title": {
+     "ar": "عامًا من الخبرة",
+     "en": "Years of experience"
+    },
+    "description": {
+     "ar": "استمرار متنامي قوامه التطوير والإبداع",
+     "en": "Continuous growth built on development and creativity."
+    }
+   }
+  ]
+ },
+ "farms": {
+  "eyebrow": {
+   "ar": "مزارعنا",
+   "en": "Our farms"
+  },
+  "title": {
+   "ar": "حيث تُزرع الأصالة",
+   "en": "Where authenticity is grown"
+  },
+  "description": {
+   "ar": "من مزارع المملكة نختار أجود التمور، بعناية تبدأ من انتقاء الثمرة وتمتد إلى كل تفاصيلها، لنحافظ على جودتها وأصالتها، ونقدّمها بما يليق بإرثها ومكانته.",
+   "en": "From farms across the Kingdom we select the finest dates, with care that begins at picking the fruit and reaches every detail, preserving their quality and authenticity and presenting them as their heritage deserves."
+  },
+  "action": {
+   "ar": "اكتشف منتجاتنا",
+   "en": "Explore our products"
+  },
+  "image": "/images/home/hero.webp"
+ },
+ "sustainability": {
+  "title": {
+   "ar": "معًا لمستقبل أكثر خضرة",
+   "en": "Together for a greener future"
+  },
+  "description": {
+   "ar": "نضع المسؤولية في صميم قراراتنا، وتبقى أي أهداف أو نسب استدامة خاضعة للاعتماد والنشر عبر نظام المحتوى.",
+   "en": "Responsibility guides our choices. Sustainability targets and percentages remain subject to approval in the CMS."
+  },
+  "image": "/images/home/heritage.webp",
+  "imageAlt": {
+   "ar": "نخيل سعودي في ضوء الصباح",
+   "en": "Saudi palms in morning light"
+  },
+  "principles": [
+   {
+    "id": "farms",
+    "icon": "people",
+    "title": {
+     "ar": "دعم المجتمعات المحلية",
+     "en": "Supporting local communities"
+    },
+    "description": {
+     "ar": "شراكات مسؤولة",
+     "en": "Responsible partnerships"
+    }
+   },
+   {
+    "id": "waste",
+    "icon": "sprout",
+    "title": {
+     "ar": "تقليل الهدر",
+     "en": "Reducing waste"
+    },
+    "description": {
+     "ar": "تحسين مستمر",
+     "en": "Continuous improvement"
+    }
+   },
+   {
+    "id": "farming",
+    "icon": "leaf",
+    "title": {
+     "ar": "ممارسات زراعية مسؤولة",
+     "en": "Responsible farming"
+    },
+    "description": {
+     "ar": "وفق بيانات معتمدة",
+     "en": "Based on approved data"
+    }
+   }
+  ]
+ },
+ "quality": {
+  "eyebrow": {
+   "ar": "التزامنا",
+   "en": "Our commitment"
+  },
+  "title": {
+   "ar": "جودة في كل التفاصيل",
+   "en": "Quality in every detail"
+  },
+  "description": {
+   "ar": "من الاختيار إلى التقديم، نهتم بكل مرحلة لتصل إليكم تجربة متسقة تعبّر عن أصالة تمرنا.",
+   "en": "From selection to presentation, every stage is considered for a consistent Tamrna experience."
+  },
+  "action": {
+   "ar": "اكتشف منتجاتنا",
+   "en": "Explore our products"
+  },
+  "images": [
+   {
+    "src": "/images/home/ajwa.webp",
+    "alt": {
+     "ar": "تمور عجوة مختارة",
+     "en": "Selected Ajwa dates"
+    }
+   },
+   {
+    "src": "/images/home/heritage.webp",
+    "alt": {
+     "ar": "عمارة سعودية ونخيل",
+     "en": "Saudi architecture and palms"
+    }
+   },
+   {
+    "src": "/images/home/stuffed.webp",
+    "alt": {
+     "ar": "تمور محشوة ومقدمة بعناية",
+     "en": "Carefully presented stuffed dates"
+    }
+   },
+   {
+    "src": "/images/home/sukkari.webp",
+    "alt": {
+     "ar": "تمور سكري على النخلة",
+     "en": "Sukkari dates and palms"
+    }
+   }
+  ]
+ },
+ "gift": {
+  "title": {
+   "ar": "أهدِ أصالة التمر لمن تحب",
+   "en": "Share the gift of authentic dates"
+  },
+  "description": {
+   "ar": "بطاقات إهداء تحمل معنى الضيافة.",
+   "en": "Gift cards inspired by Saudi hospitality."
+  },
+  "action": {
+   "ar": "اكتشف بطاقات الإهداء",
+   "en": "Explore gift cards"
+  },
+  "image": "/images/home/gifting.webp"
+ }
+}
+JSON, true);
+$t = fn($v) => is_array($v) ? ($v[$locale] ?? ($v['ar'] ?? '')) : (string)$v;
+$iconMap = ['award' => 'award', 'fingerprint' => 'fingerprint', 'globe' => 'earth', 'package' => 'package-check', 'repeat' => 'refresh-ccw', 'heart' => 'heart', 'leaf' => 'leaf', 'palm' => 'tree-palm', 'people' => 'users-round', 'pin' => 'map-pin', 'shield' => 'shield-check', 'sprout' => 'sprout', 'truck' => 'truck'];
+$icon = fn($key, $size = 24) => fnd_icon($iconMap[$key] ?? 'sparkles', $size);
+$img = fn($src) => asset('assets' . $src);
 ?>
 <div class="pattern-background about-page">
     <section class="about-hero">
-        <img src="<?= asset('assets/images/home/heritage.webp') ?>" alt="" style="position:absolute;inset:0;width:100%;height:100%">
+        <img src="<?= $img($c['hero']['image']) ?>" alt="">
         <div class="about-hero-shade"></div>
         <div class="container about-hero-content">
             <div class="about-hero-copy">
-                <nav aria-label="<?= $isRtl ? 'مسار الصفحة' : 'Breadcrumb' ?>">
-                    <a href="<?= url('/') ?>"><?= $isRtl ? 'الرئيسية' : 'Home' ?></a>
+                <nav aria-label="<?= $ar ? 'مسار الصفحة' : 'Breadcrumb' ?>">
+                    <a href="<?= url('/') ?>"><?= $ar ? 'الرئيسية' : 'Home' ?></a>
                     <span>/</span>
-                    <span><?= $isRtl ? 'من نحن' : 'About' ?></span>
+                    <span><?= esc_html($t($c['hero']['eyebrow'])) ?></span>
                 </nav>
-                <span class="about-eyebrow"><?= $isRtl ? 'أصالة النخيل وكرم الضيافة السعودية' : 'Authentic Palms & Saudi Hospitality' ?></span>
-                <h1><?= $isRtl ? "قصة تَـمْرُنـا ..\nتراث سعودي عريق بجودة ملكية" : "The Tumurna story —\nheritage meets distinction" ?></h1>
-                <p><?= $isRtl
-                    ? 'نحن في "تمرنا" نؤمن بأن التمور السعودية ليست مجرد غذاء، بل هي رمز عريق للأصالة والكرم والضيافة الملكية المتوارثة عبر الأجيال.'
-                    : 'At Tumurna, we believe Saudi dates are far more than fruit—they are a cherished emblem of generosity, heritage, and royal hospitality celebrated across generations.' ?></p>
-                <a class="button button--secondary" href="<?= url('/catalog') ?>"><?= $isRtl ? 'تسوق التمور' : 'Shop dates' ?><?= fnd_icon($arrow, 18, 'directional-arrow') ?></a>
+                <span class="about-eyebrow"><?= esc_html($t($c['hero']['eyebrow'])) ?></span>
+                <h1><?= esc_html($t($c['hero']['title'])) ?></h1>
+                <p><?= esc_html($t($c['hero']['description'])) ?></p>
+                <a class="button button--secondary" href="#story"><?= esc_html($t($c['hero']['action'])) ?><?= fnd_icon($arrow, 18, 'directional-arrow') ?></a>
             </div>
             <aside>
-                <?= fnd_icon('tree-palm', 48, '', 1.2) ?>
-                <p><?= $isRtl ? 'من أرض<br>السعودية<br>إلى كل العالم' : 'From the land<br>of Saudi Arabia<br>to the world' ?></p>
+                <?= fnd_icon('tree-palm', 24) ?>
+                <p><?= $ar ? 'من أرض<br>السعودية<br>إلى كل العالم' : 'From Saudi soil<br>to the world' ?></p>
             </aside>
         </div>
     </section>
 
     <main>
         <section class="container about-story" id="story">
-            <div class="about-story-media">
-                <img src="<?= asset('assets/images/saudi_dates_hero_1787053884267.jpg') ?>" alt="<?= $isRtl ? 'حصاد تمور تمرنا' : 'Tamrna dates harvest' ?>" style="position:absolute;inset:0;width:100%;height:100%">
-            </div>
+            <div class="about-story-media"><img src="<?= $img($c['story']['image']) ?>" alt="<?= esc_attr($t($c['story']['imageAlt'])) ?>"></div>
             <div class="about-story-copy">
-                <span class="about-eyebrow"><?= $isRtl ? 'قصتنا' : 'Our story' ?></span>
-                <h2><?= $isRtl ? 'من الواحات الخضراء إلى مائدتكم الملكية' : 'From golden oases to your prestigious table' ?></h2>
-                <p><?= $isRtl
-                    ? 'انطلقت مسيرتنا من شغف عميق باختيار أرقى أصناف التمور من بساتين المدينة المنورة، واحات القصيم، ومزارع الأحساء التاريخية، لنقدمها وفق أعلى معايير الجودة العالمية والتغليف الملكي الفاخر.'
-                    : 'Our journey began with a profound dedication to curating the finest dates from historic groves across Madinah, Qassim, and Al-Ahsa, presented with immaculate craftsmanship and bespoke packaging.' ?></p>
-                <p style="margin-top:12px"><?= $isRtl
-                    ? 'نحرص في كل مرحلة - من القطف اليدوي والفرز الدقيق وصولاً إلى التعبئة والتوصيل المبرد - على حفظ النكهة الأصلية والقيمة الغذائية العالية لكل حبة، لنصل بها إلى مائدتكم أو لتكون هديتكم الأبهى لمن تحبون.'
-                    : 'At every milestone—from hand harvest and rigorous sorting to refrigerated logistics—we protect the natural moisture, rich nutrients, and sublime texture of each date.' ?></p>
+                <span class="about-eyebrow"><?= esc_html($t($c['story']['eyebrow'])) ?></span>
+                <h2><?= esc_html($t($c['story']['title'])) ?></h2>
+                <p><?= esc_html($t($c['story']['description'])) ?></p>
                 <ul class="about-pillars">
-                    <li><p><strong><?= $isRtl ? 'جودة أصيلة' : 'Authentic quality' ?></strong><span><?= $isRtl ? 'اختيار يليق بالضيافة' : 'Selected for hospitality' ?></span></p></li>
-                    <li><p><strong><?= $isRtl ? 'ثقة مستمرة' : 'Lasting trust' ?></strong><span><?= $isRtl ? 'عناية في كل تجربة' : 'Care in every experience' ?></span></p></li>
-                    <li><p><strong><?= $isRtl ? 'مجتمع أكبر' : 'A wider community' ?></strong><span><?= $isRtl ? 'روابط تبدأ من الأرض' : 'Bonds that start from the land' ?></span></p></li>
-                    <li><p><strong><?= $isRtl ? 'مصدر محلي' : 'Local sourcing' ?></strong><span><?= $isRtl ? 'من مزارع المملكة' : 'From the Kingdom’s farms' ?></span></p></li>
+                    <?php foreach ($c['pillars'] as $item): ?>
+                        <li><p><strong><?= esc_html($t($item['title'])) ?></strong><span><?= esc_html($t($item['description'])) ?></span></p></li>
+                    <?php endforeach; ?>
                 </ul>
             </div>
         </section>
 
-        <section class="container about-stats" aria-label="<?= $isRtl ? 'مؤشرات تمرنا' : 'Tamrna highlights' ?>">
+        <section class="container about-stats" aria-label="<?= $ar ? 'مؤشرات تمرنا' : 'Tamrna indicators' ?>">
+            <?php foreach ($c['stats'] as $item): ?>
+                <article><?= $icon($item['icon']) ?><span><?= esc_html($t($item['label'])) ?></span><strong><?= esc_html($t($item['value'])) ?></strong></article>
+            <?php endforeach; ?>
+        </section>
+
+        <section class="container about-farms" id="farms">
+            <img src="<?= $img($c['farms']['image']) ?>" alt="">
+            <div></div>
             <article>
-                <?= fnd_icon('sparkles', 35, '', 1.4) ?>
-                <span><?= $isRtl ? 'طبيعي ونخب أول' : 'Natural prime grade' ?></span>
-                <strong dir="ltr">100%</strong>
-            </article>
-            <article>
-                <?= fnd_icon('map-pin', 35, '', 1.4) ?>
-                <span><?= $isRtl ? 'مناطق حصاد تاريخية' : 'Historic regions' ?></span>
-                <strong dir="ltr">3</strong>
-            </article>
-            <article>
-                <?= fnd_icon('truck', 35, '', 1.4) ?>
-                <span><?= $isRtl ? 'عناية فائقة بالجودة' : 'Cold chain care' ?></span>
-                <strong dir="ltr">24/7</strong>
-            </article>
-            <article>
-                <?= fnd_icon('gift', 35, '', 1.4) ?>
-                <span><?= $isRtl ? 'مناسبات وإهداءات' : 'Occasions & gifting' ?></span>
-                <strong dir="ltr">∞</strong>
+                <span class="about-eyebrow"><?= esc_html($t($c['farms']['eyebrow'])) ?></span>
+                <h2><?= esc_html($t($c['farms']['title'])) ?></h2>
+                <p><?= esc_html($t($c['farms']['description'])) ?></p>
+                <a class="button button--secondary" href="<?= url('/catalog') ?>"><?= esc_html($t($c['farms']['action'])) ?><?= fnd_icon($arrow, 17, 'directional-arrow') ?></a>
             </article>
         </section>
 
         <section class="container about-values">
             <div class="section-title section-title--center section-title--divider">
-                <span class="eyebrow"><?= $isRtl ? 'قيمنا' : 'Our values' ?></span>
-                <div class="section-heading-line"><h2><?= $isRtl ? 'قيمنا الجوهرية' : 'Our Core Values' ?></h2></div>
-                <p><?= $isRtl ? 'ركائز نبني عليها ثقة ضيوفنا وشركائنا كل يوم' : 'The timeless principles defining the trust of our patrons every day' ?></p>
+                <span class="eyebrow"><?= $ar ? 'قيمنا' : 'Our values' ?></span>
+                <div class="section-heading-line"><h2><?= $ar ? 'المبادئ التي نؤمن بها' : 'Principles we believe in' ?></h2></div>
             </div>
-            <div class="about-values-grid">
-                <article>
-                    <?= fnd_icon('award', 43, '', 1.3) ?>
-                    <h3><?= $isRtl ? 'الأصالة والموثوقية' : 'Authenticity & Purity' ?></h3>
-                    <p><?= $isRtl
-                        ? 'نضمن مصادر تمورنا من مزارع معتمدة وموثقة تتبع ممارسات زراعية مستدامة وخالية من الكيماويات.'
-                        : 'Ethically sourced exclusively from certified organic groves following sustainable ancestral practices.' ?></p>
-                </article>
-                <article>
-                    <?= fnd_icon('sparkles', 43, '', 1.3) ?>
-                    <h3><?= $isRtl ? 'الضيافة الملكية' : 'Royal Hospitality' ?></h3>
-                    <p><?= $isRtl
-                        ? 'نصمم عبواتنا وبوكساتنا بعناية حرفية لتكون تحفة تتباهى بها في استقبال كبار ضيوفك وفي مناسباتك السعيدة.'
-                        : 'Handcrafted luxury trunks and velvet presentations tailored for dignitary receptions and celebrations.' ?></p>
-                </article>
-                <article>
-                    <?= fnd_icon('truck', 43, '', 1.3) ?>
-                    <h3><?= $isRtl ? 'سلسلة تبريد متكاملة' : 'Refrigerated Cold Fleet' ?></h3>
-                    <p><?= $isRtl
-                        ? 'من المستودع المبرد حتى باب المستلم للحفاظ على الطراوة واللون الذهبي الساحر.'
-                        : 'Unbroken refrigerated distribution maintaining peak softness, moisture, and golden brilliance.' ?></p>
-                </article>
+            <div>
+                <?php foreach ($c['values'] as $item): ?>
+                    <article><?= $icon($item['icon']) ?><h3><?= esc_html($t($item['title'])) ?></h3><p><?= esc_html($t($item['description'])) ?></p></article>
+                <?php endforeach; ?>
             </div>
         </section>
 
-        <section class="container about-farms" id="farms">
-            <img src="<?= asset('assets/images/home/hero.webp') ?>" alt="" style="position:absolute;inset:0;width:100%;height:100%">
-            <div></div>
-            <article>
-                <span class="about-eyebrow"><?= $isRtl ? 'مزارعنا' : 'Our farms' ?></span>
-                <h2><?= $isRtl ? 'من قلب أرض السعودية' : 'From the heart of Saudi Arabia' ?></h2>
-                <p><?= $isRtl
-                    ? 'بساتين النخيل المباركة في مزارع العالية بالمدينة المنورة وواحات القصيم ومزارع الأحساء.'
-                    : 'Blessed palm groves of Al-Aliyah in Madinah, the fertile oases of Qassim and the farms of Al-Ahsa.' ?></p>
-                <a class="button button--secondary" href="<?= url('/catalog') ?>"><?= $isRtl ? 'اكتشف التمور' : 'Discover our dates' ?></a>
-            </article>
+        <section class="container about-performance" id="numbers">
+            <header>
+                <span class="about-eyebrow"><?= esc_html($t($c['performance']['eyebrow'])) ?></span>
+                <h2><?= esc_html($t($c['performance']['title'])) ?></h2>
+                <p><?= esc_html($t($c['performance']['description'])) ?></p>
+            </header>
+            <ol>
+                <?php foreach ($c['performance']['items'] as $item): ?>
+                    <li><span aria-hidden="true"><?= $icon($item['icon']) ?></span><b dir="ltr"><?= esc_html($item['value']) ?></b><strong><?= esc_html($t($item['title'])) ?></strong><small><?= esc_html($t($item['description'])) ?></small></li>
+                <?php endforeach; ?>
+            </ol>
         </section>
 
-        <section class="container about-sustainability" id="journey">
-            <div class="about-sustainability-media">
-                <img src="<?= asset('assets/images/home/heritage.webp') ?>" alt="" style="position:absolute;inset:0;width:100%;height:100%">
-            </div>
+        <section class="container about-sustainability">
+            <div class="about-sustainability-media"><img src="<?= $img($c['sustainability']['image']) ?>" alt="<?= esc_attr($t($c['sustainability']['imageAlt'])) ?>"></div>
             <article>
-                <span class="about-eyebrow"><?= $isRtl ? 'التزامنا' : 'Our commitment' ?></span>
-                <h2><?= $isRtl ? 'جودة في كل التفاصيل' : 'Quality in every detail' ?></h2>
-                <p><?= $isRtl ? 'من الاختيار إلى التقديم، نهتم بكل مرحلة لتصل إليكم تجربة متسقة تعبّر عن أصالة تمرنا.' : 'From selection to presentation, we care for every stage so you receive a consistent experience that reflects Tamrna’s authenticity.' ?></p>
+                <h2><?= esc_html($t($c['sustainability']['title'])) ?></h2>
+                <p><?= esc_html($t($c['sustainability']['description'])) ?></p>
                 <div class="about-sustainability-principles">
-                    <span><?= fnd_icon('leaf', 32, '', 1.4) ?><strong><?= $isRtl ? 'القطف اليدوي' : 'Hand harvest' ?></strong><small><?= $isRtl ? 'فرز دقيق' : 'Careful sorting' ?></small></span>
-                    <span><?= fnd_icon('package-check', 32, '', 1.4) ?><strong><?= $isRtl ? 'تغليف فاخر' : 'Luxury packaging' ?></strong><small><?= $isRtl ? 'يليق بالإهداء' : 'Fit for gifting' ?></small></span>
-                    <span><?= fnd_icon('snowflake', 32, '', 1.4) ?><strong><?= $isRtl ? 'شحن مبرد' : 'Chilled shipping' ?></strong><small><?= $isRtl ? 'حتى باب المستلم' : 'To the doorstep' ?></small></span>
+                    <?php foreach ($c['sustainability']['principles'] as $item): ?>
+                        <span><strong><?= esc_html($t($item['title'])) ?></strong><small><?= esc_html($t($item['description'])) ?></small></span>
+                    <?php endforeach; ?>
                 </div>
             </article>
         </section>
 
-        <section class="about-gift" style="margin-top:48px">
-            <img src="<?= asset('assets/images/home/gifting.webp') ?>" alt="" style="position:absolute;inset:0;width:100%;height:100%">
+        <section class="container about-quality" id="quality">
+            <article>
+                <span class="about-eyebrow"><?= esc_html($t($c['quality']['eyebrow'])) ?></span>
+                <h2><?= esc_html($t($c['quality']['title'])) ?></h2>
+                <p><?= esc_html($t($c['quality']['description'])) ?></p>
+                <a class="button button--secondary" href="<?= url('/catalog') ?>"><?= esc_html($t($c['quality']['action'])) ?><?= fnd_icon($arrow, 17, 'directional-arrow') ?></a>
+            </article>
+            <div class="about-quality-gallery">
+                <?php foreach ($c['quality']['images'] as $image): ?>
+                    <figure><img src="<?= $img($image['src']) ?>" alt="<?= esc_attr($t($image['alt'])) ?>" loading="lazy"></figure>
+                <?php endforeach; ?>
+            </div>
+        </section>
+
+        <section class="about-gift">
+            <img src="<?= $img($c['gift']['image']) ?>" alt="">
             <div></div>
             <article class="container">
-                <h2><?= $isRtl ? 'أهدِ أصالة التمر لمن تحب' : 'Gift the authenticity of dates to those you love' ?></h2>
-                <p><?= $isRtl ? 'بطاقات إهداء تحمل معنى الضيافة.' : 'Gift cards that carry the meaning of hospitality.' ?></p>
-                <a class="button button--secondary" href="<?= url('/gift-cards') ?>"><?= $isRtl ? 'اكتشف بطاقات الإهداء' : 'Discover gift cards' ?></a>
+                <h2><?= esc_html($t($c['gift']['title'])) ?></h2>
+                <p><?= esc_html($t($c['gift']['description'])) ?></p>
+                <a class="button button--secondary" href="<?= url('/gift-cards') ?>"><?= esc_html($t($c['gift']['action'])) ?><?= fnd_icon($arrow, 17, 'directional-arrow') ?></a>
             </article>
         </section>
     </main>
