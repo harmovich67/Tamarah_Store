@@ -196,6 +196,9 @@ $router->post('/admin/login', [\App\Controllers\AuthController::class, 'login'])
 $router->get('/register', [\App\Controllers\AuthController::class, 'showRegister']);
 $router->post('/register', [\App\Controllers\AuthController::class, 'register']);
 
+$router->get('/forgot-password', [\App\Controllers\AuthController::class, 'showForgotPassword']);
+$router->post('/forgot-password', [\App\Controllers\AuthController::class, 'forgotPassword']);
+
 $router->get('/verify-otp', [\App\Controllers\AuthController::class, 'showVerifyOtp']);
 $router->post('/verify-otp', [\App\Controllers\AuthController::class, 'verifyOtp']);
 $router->post('/resend-otp', [\App\Controllers\AuthController::class, 'resendOtp']);
@@ -207,6 +210,7 @@ $router->get('/logout', [\App\Controllers\AuthController::class, 'logout']);
 // ==========================================
 $router->get('/profile', [\App\Controllers\ProfileController::class, 'index']);
 $router->post('/profile/update-info', [\App\Controllers\ProfileController::class, 'updateInfo']);
+$router->post('/profile/change-password', [\App\Controllers\ProfileController::class, 'changePassword']);
 $router->get('/profile/addresses', [\App\Controllers\ProfileController::class, 'addresses']);
 $router->post('/profile/addresses/store', [\App\Controllers\ProfileController::class, 'storeAddress']);
 $router->post('/profile/addresses/delete', [\App\Controllers\ProfileController::class, 'deleteAddress']);
@@ -214,6 +218,19 @@ $router->post('/profile/addresses/default', [\App\Controllers\ProfileController:
 $router->get('/profile/orders', [\App\Controllers\ProfileController::class, 'orders']);
 $router->get('/profile/order/{order_number}', [\App\Controllers\ProfileController::class, 'orderDetail']);
 $router->post('/profile/order/{order_number}/cancel', [\App\Controllers\ProfileController::class, 'cancelOrder']);
+$router->get('/profile/gift-cards', [\App\Controllers\ProfileController::class, 'giftCards']);
+$router->get('/profile/notifications', [\App\Controllers\ProfileController::class, 'notifications']);
+$router->get('/profile/settings', [\App\Controllers\ProfileController::class, 'settings']);
+$router->post('/profile/settings/save', [\App\Controllers\ProfileController::class, 'saveSettings']);
+
+// Account route aliases for frontend compatibility
+$router->get('/account', [\App\Controllers\ProfileController::class, 'index']);
+$router->get('/account/profile', [\App\Controllers\ProfileController::class, 'index']);
+$router->get('/account/orders', [\App\Controllers\ProfileController::class, 'orders']);
+$router->get('/account/addresses', [\App\Controllers\ProfileController::class, 'addresses']);
+$router->get('/account/gift-cards', [\App\Controllers\ProfileController::class, 'giftCards']);
+$router->get('/account/notifications', [\App\Controllers\ProfileController::class, 'notifications']);
+$router->get('/account/settings', [\App\Controllers\ProfileController::class, 'settings']);
 
 // ==========================================
 // 4. Admin Dashboard & Management Routes

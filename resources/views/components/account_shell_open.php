@@ -14,7 +14,10 @@ $_nav = [
     'profile' => [url('/profile'), $_en ? 'Profile' : 'الملف الشخصي', 'user-round', null],
     'orders' => [url('/profile/orders'), $_en ? 'My Orders' : 'طلباتي', 'package', $ordersCount ?? (isset($orders) ? count($orders) : null)],
     'addresses' => [url('/profile/addresses'), $_en ? 'My addresses' : 'عناويني', 'map-pin', $addressesCount ?? (isset($addresses) ? count($addresses) : null)],
+    'gift-cards' => [url('/profile/gift-cards'), $_en ? 'Gift cards' : 'بطاقات الهدايا', 'gift', null],
     'wishlist' => [url('/wishlist'), $_en ? 'Wishlist' : 'المفضلة', 'heart', null],
+    'notifications' => [url('/profile/notifications'), $_en ? 'Notifications' : 'الإشعارات', 'bell', null],
+    'settings' => [url('/profile/settings'), $_en ? 'Settings' : 'الإعدادات', 'settings', null],
 ];
 ?>
 <section class="account-hub">
@@ -41,6 +44,9 @@ $_nav = [
                         <a href="<?= $href ?>" class="<?= ($accountActive ?? '') === $key ? 'is-active' : '' ?>">
                             <?= fnd_icon($icon, 20, '', 1.6) ?>
                             <?= $label ?>
+                            <?php if ($count !== null && $count > 0): ?>
+                                <b style="margin-inline-start:auto;font-size:11px;background:#e6d5bb;color:#3c5749;padding:1px 7px;border-radius:999px"><?= (int)$count ?></b>
+                            <?php endif; ?>
                         </a>
                     <?php endforeach; ?>
                 </nav>
@@ -63,4 +69,10 @@ $_nav = [
                         <?php if (!empty($_user['phone'])): ?><a dir="ltr" href="tel:<?= esc_attr($_user['phone']) ?>"><?= esc_html($_user['phone']) ?></a><?php endif; ?>
                         <small><?= fnd_icon('shield-check', 14) ?><?= $_en ? 'Verified account' : 'حساب موثق' ?></small>
                     </div>
+                    <?php if (($accountActive ?? '') === 'profile'): ?>
+                        <button type="button" class="button button--outline" id="account-toggle-edit-btn" onclick="toggleProfileEdit()">
+                            <?= fnd_icon('pencil', 16) ?>
+                            <span id="account-toggle-edit-text"><?= $_en ? 'Edit profile' : 'تعديل البيانات' ?></span>
+                        </button>
+                    <?php endif; ?>
                 </section>

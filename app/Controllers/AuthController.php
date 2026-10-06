@@ -68,7 +68,7 @@ class AuthController
         }
 
         // 2. Email / Phone + Password Login
-        $identifier = trim((string)$request->get('email'));
+        $identifier = trim((string)($request->get('identity') ?: $request->get('email') ?: $request->get('phone')));
         $password = (string)$request->get('password');
 
         // Rate limit password login attempts by IP
@@ -111,6 +111,40 @@ class AuthController
         ]);
     }
 
+    public function showForgotPassword(Request $request): void
+    {
+        if (Auth::check()) {
+            Response::redirect('/profile');
+            return;
+        }
+        Response::view('auth/forgot_password');
+    }
+
+    public function forgotPassword(Request $request): void
+    {
+        $phone = OtpService::cleanPhone((string)$request->get('phone'));
+        if (empty($phone) || strlen($phone) < 9) {
+            Response::view('auth/forgot_password', [
+                'error' => 'يرجى إدخال رقم جوال سعودي صحيح (مثال: 0555123456)',
+                'phone' => $phone
+            ]);
+            return;
+        }
+
+        $user = Database::fetchOne("SELECT * FROM users WHERE phone = ?", [$phone]);
+        if ($user) {
+            $_SESSION['pending_otp_phone'] = $phone;
+            $_SESSION['otp_purpose'] = 'reset';
+            OtpService::sendOtp($phone);
+            Response::redirect('/verify-otp?notice=reset');
+            return;
+        }
+
+        Response::view('auth/forgot_password', [
+            'error' => 'رقم الجوال غير مسجل لدينا في تمرنا.'
+        ]);
+    }
+
     public function showRegister(Request $request): void
     {
         if (Auth::check()) {
@@ -126,14 +160,34 @@ class AuthController
             Response::view('auth/register', ['error' => 'التسجيل برمز الهاتف غير متاح حالياً.']);
             return;
         }
+        $first = trim((string)$request->get('first'));
+        $last = trim((string)$request->get('last'));
         $name = trim((string)$request->get('name'));
+        if (empty($name) && (!empty($first) || !empty($last))) {
+            $name = trim($first . ' ' . $last);
+        }
         $phone = OtpService::cleanPhone((string)$request->get('phone'));
         $email = trim((string)$request->get('email'));
         $password = (string)$request->get('password');
+        $confirm = (string)$request->get('confirm');
+
+        if (!empty($password) && !empty($confirm) && $password !== $confirm) {
+            Response::view('auth/register', [
+                'error' => 'كلمتا المرور غير متطابقتين',
+                'first' => $first,
+                'last' => $last,
+                'name' => $name,
+                'phone' => $phone,
+                'email' => $email
+            ]);
+            return;
+        }
 
         if (empty($name) || empty($phone)) {
             Response::view('auth/register', [
-                'error' => 'يرجى إدخال الاسم الكامل ورقم الجوال السعودي',
+                'error' => 'يرجى إدخال الاسم ورقم الجوال السعودي',
+                'first' => $first,
+                'last' => $last,
                 'name' => $name,
                 'phone' => $phone,
                 'email' => $email

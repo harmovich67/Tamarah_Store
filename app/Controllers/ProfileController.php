@@ -49,7 +49,14 @@ class ProfileController
             LIMIT 1
         ", [$userId]);
 
-        // Recent 3 orders
+        // Fetch all addresses for the overview section
+        $addresses = Database::fetchAll("
+            SELECT * FROM user_addresses 
+            WHERE user_id = ? 
+            ORDER BY is_default DESC, id DESC
+        ", [$userId]);
+
+        // Recent 3 orders with lines
         $recentOrders = Database::fetchAll("
             SELECT o.*, 
                    COUNT(oi.id) as items_count
@@ -61,14 +68,70 @@ class ProfileController
             LIMIT 3
         ", [$userId, $userPhone, $userEmail]);
 
+        $recentOrderItems = [];
+        if ($recentOrders) {
+            $ids = array_map(fn($o) => (int)$o['id'], $recentOrders);
+            $marks = implode(',', array_fill(0, count($ids), '?'));
+            $rows = Database::fetchAll("
+                SELECT oi.order_id, oi.product_name, oi.quantity, oi.price
+                FROM order_items oi
+                WHERE oi.order_id IN ($marks)
+                ORDER BY oi.id ASC
+            ", $ids);
+            foreach ($rows as $row) {
+                $recentOrderItems[(int)$row['order_id']][] = $row;
+            }
+        }
+
+        $passError = null;
+        if ($request->get('pass_error') === 'mismatch') $passError = 'كلمتا المرور غير متطابقتين أو الحقول ناقصة.';
+        elseif ($request->get('pass_error') === 'length') $passError = 'استخدم كلمة مرور من 8 أحرف على الأقل تشمل حرفًا ورقمًا.';
+        elseif ($request->get('pass_error') === 'wrong_current') $passError = 'كلمة المرور الحالية غير صحيحة.';
+
         Response::view('storefront/profile/index', [
             'user' => $user,
             'ordersCount' => (int)$ordersCount,
             'addressesCount' => (int)$addressesCount,
+            'addresses' => $addresses,
             'defaultAddress' => $defaultAddress,
             'recentOrders' => $recentOrders,
-            'success' => $request->get('saved') ? 'تم تحديث بيانات الحساب بنجاح!' : null
+            'recentOrderItems' => $recentOrderItems,
+            'success' => $request->get('saved') ? 'تم تحديث بيانات الحساب بنجاح!' : ($request->get('pass_saved') ? 'تم تحديث كلمة المرور بنجاح!' : null),
+            'passError' => $passError,
+            'error' => $request->get('error') === 'email_exists' ? 'البريد الإلكتروني مسجل بالفعل لمستخدم آخر.' : null
         ]);
+    }
+
+    public function changePassword(Request $request): void
+    {
+        $user = $this->requireAuth();
+        if (!$user) return;
+
+        $userId = (int)$user['id'];
+        $currentPassword = (string)$request->get('currentPassword');
+        $newPassword = (string)$request->get('password');
+        $confirm = (string)$request->get('confirm');
+
+        if (empty($currentPassword) || empty($newPassword) || $newPassword !== $confirm) {
+            Response::redirect('/profile?pass_error=mismatch');
+            return;
+        }
+
+        if (strlen($newPassword) < 8) {
+            Response::redirect('/profile?pass_error=length');
+            return;
+        }
+
+        $dbUser = Database::fetchOne("SELECT password FROM users WHERE id = ?", [$userId]);
+        if (!$dbUser || !password_verify($currentPassword, $dbUser['password'])) {
+            Response::redirect('/profile?pass_error=wrong_current');
+            return;
+        }
+
+        $hashed = password_hash($newPassword, PASSWORD_DEFAULT);
+        Database::execute("UPDATE users SET password = ? WHERE id = ?", [$hashed, $userId]);
+
+        Response::redirect('/profile?pass_saved=1');
     }
 
     public function updateInfo(Request $request): void
@@ -79,18 +142,15 @@ class ProfileController
         $userId = (int)$user['id'];
         $name = trim((string)$request->get('name'));
         $email = trim((string)$request->get('email'));
-        $password = (string)$request->get('password');
+        $phone = trim((string)$request->get('phone'));
 
         if (empty($name)) {
-            Response::view('storefront/profile/index', [
-                'user' => $user,
-                'error' => 'الاسم الكامل مطلوب'
-            ]);
+            Response::redirect('/profile?error=name_required');
             return;
         }
 
         // Verify email unique if provided
-        if (!empty($email) && $email !== $user['email']) {
+        if (!empty($email) && $email !== ($user['email'] ?? '')) {
             $exists = Database::fetchOne("SELECT id FROM users WHERE email = ? AND id != ?", [$email, $userId]);
             if ($exists) {
                 Response::redirect('/profile?error=email_exists');
@@ -98,13 +158,13 @@ class ProfileController
             }
         }
 
-        if (!empty($password)) {
-            $hashed = password_hash($password, PASSWORD_DEFAULT);
+        if (!empty($phone)) {
+            $phone = OtpService::cleanPhone($phone);
             Database::execute("
                 UPDATE users 
-                SET name = ?, email = ?, password = ? 
+                SET name = ?, email = ?, phone = ? 
                 WHERE id = ?
-            ", [$name, $email, $hashed, $userId]);
+            ", [$name, $email, $phone, $userId]);
         } else {
             Database::execute("
                 UPDATE users 
@@ -296,10 +356,13 @@ class ProfileController
         $userPhone = $user['phone'] ?? '';
         $userEmail = $user['email'] ?? '';
 
+        $isSqlite = Database::getDriver() === 'sqlite';
+        $concat = $isSqlite ? "GROUP_CONCAT(oi.product_name, ' • ')" : "GROUP_CONCAT(DISTINCT oi.product_name SEPARATOR ' • ')";
+
         $orders = Database::fetchAll("
             SELECT o.*, 
                    COUNT(oi.id) as items_count,
-                   GROUP_CONCAT(DISTINCT oi.product_name SEPARATOR ' • ') as products_snippet
+                   {$concat} as products_snippet
             FROM orders o
             LEFT JOIN order_items oi ON o.id = oi.order_id
             WHERE o.user_id = ? OR o.customer_phone = ? OR (o.customer_email = ? AND o.customer_email != '')
@@ -400,5 +463,144 @@ class ProfileController
         } else {
             Response::redirect('/profile/order/' . urlencode($orderNumber) . '?error=cancel_not_allowed');
         }
+    }
+
+    public function giftCards(Request $request): void
+    {
+        $user = $this->requireAuth();
+        if (!$user) return;
+
+        $userEmail = $user['email'] ?? '';
+        $userPhone = $user['phone'] ?? '';
+
+        $cards = Database::fetchAll("
+            SELECT * FROM gift_cards 
+            WHERE recipient_email = ? OR recipient_phone = ? OR sender_name = ?
+            ORDER BY id DESC
+        ", [$userEmail, $userPhone, $user['name']]);
+
+        // If no user-specific cards in DB yet, show sample review cards matching frontend design
+        if (empty($cards)) {
+            $cards = [
+                [
+                    'code' => 'TMR-GIFT-500-ROYAL',
+                    'card_type' => 'digital',
+                    'amount' => 500.00,
+                    'balance' => 500.00,
+                    'sender_name' => 'فهد الناصر',
+                    'recipient_name' => $user['name'] ?: 'خالد السعدون',
+                    'order_number' => '1024',
+                    'status' => 'unused',
+                    'created_at' => date('Y-m-d', strtotime('-5 days')),
+                    'message' => 'كل عام وأنتم بخير بمناسبة قدوم شهر الخير والبركة'
+                ],
+                [
+                    'code' => 'TMR-GIFT-250-WOOD',
+                    'card_type' => 'printed',
+                    'amount' => 250.00,
+                    'balance' => 0.00,
+                    'sender_name' => 'سلطان المقرن',
+                    'recipient_name' => 'محمد القحطاني',
+                    'order_number' => '1018',
+                    'status' => 'used',
+                    'created_at' => date('Y-m-d', strtotime('-20 days')),
+                    'message' => 'أجمل التهاني والتبريكات، ضيافة ملكية تليق بمقامك الكريم'
+                ]
+            ];
+        }
+
+        Response::view('storefront/profile/gift_cards', [
+            'user' => $user,
+            'cards' => $cards
+        ]);
+    }
+
+    public function notifications(Request $request): void
+    {
+        $user = $this->requireAuth();
+        if (!$user) return;
+
+        $readIds = $_SESSION['notifications_read'] ?? [];
+        if ($request->get('mark_all')) {
+            $_SESSION['notifications_read'] = ['notif-1', 'notif-2', 'notif-3'];
+            Response::redirect('/profile/notifications');
+            return;
+        }
+
+        if ($readId = $request->get('read')) {
+            if (!in_array($readId, $readIds, true)) {
+                $readIds[] = $readId;
+                $_SESSION['notifications_read'] = $readIds;
+            }
+            Response::redirect('/profile/notifications');
+            return;
+        }
+
+        $notifications = [
+            [
+                'id' => 'notif-1',
+                'title' => 'تم تأكيد طلبك #1024 بنجاح',
+                'title_en' => 'Your order #1024 is confirmed',
+                'body' => 'بدأ تجهيز عبوات التمور الفاخرة بعناية فائقة تمهيداً للشحن المبرد.',
+                'body_en' => 'Preparation of your royal dates shipment with temperature control has started.',
+                'created_at' => date('Y-m-d', strtotime('-1 day')),
+                'is_read' => in_array('notif-1', $readIds, true)
+            ],
+            [
+                'id' => 'notif-2',
+                'title' => 'وصلت بطاقة إهداء جديدة إلى بريدك',
+                'title_en' => 'A new gift card has arrived',
+                'body' => 'أهدى إليك فهد الناصر بطاقة إهداء فاخرة بقيمة 500 ر.س.',
+                'body_en' => 'Fahad Al-Nasser sent you a luxury gift card of 500 SAR.',
+                'created_at' => date('Y-m-d', strtotime('-4 days')),
+                'is_read' => in_array('notif-2', $readIds, true) || !isset($_SESSION['notifications_read'])
+            ],
+            [
+                'id' => 'notif-3',
+                'title' => 'موسم تمور السكري الملكي الفاخر',
+                'title_en' => 'Royal Sukkari dates season',
+                'body' => 'بدأ حصاد الدفعة الأولى من مزارع القصيم وعنيزة. الكميات محدودة.',
+                'body_en' => 'Harvest of the first harvest batch has started. Limited quantities.',
+                'created_at' => date('Y-m-d', strtotime('-10 days')),
+                'is_read' => in_array('notif-3', $readIds, true) || !isset($_SESSION['notifications_read'])
+            ],
+        ];
+
+        Response::view('storefront/profile/notifications', [
+            'user' => $user,
+            'notifications' => $notifications
+        ]);
+    }
+
+    public function settings(Request $request): void
+    {
+        $user = $this->requireAuth();
+        if (!$user) return;
+
+        $settings = $_SESSION['user_account_settings'] ?? [
+            'orders' => true,
+            'gifts' => true,
+            'marketing' => false
+        ];
+
+        Response::view('storefront/profile/settings', [
+            'user' => $user,
+            'settings' => $settings,
+            'success' => $request->get('saved') ? 'تم حفظ الإعدادات بنجاح على هذا المتصفح.' : null
+        ]);
+    }
+
+    public function saveSettings(Request $request): void
+    {
+        $user = $this->requireAuth();
+        if (!$user) return;
+
+        $_SESSION['user_account_settings'] = [
+            'orders' => (bool)$request->get('notif_orders'),
+            'gifts' => (bool)$request->get('notif_gifts'),
+            'marketing' => (bool)$request->get('notif_marketing')
+        ];
+
+        Response::redirect('/profile/settings?saved=1');
     }
 }

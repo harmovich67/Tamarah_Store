@@ -23,7 +23,10 @@ $badgeText = lang_get($p, 'badge');
 $cardCategory = (string)lang_get($p, 'category_name', '');
 $weightText = (string)($p['weight'] ?? ($isRtl ? '1 كجم' : '1 kg'));
 if (!$isRtl) {
-    $weightText = str_replace(['كجم', 'كيلو'], 'kg', $weightText);
+    $weightText = strtr($weightText, [
+        'كرتون مبرد' => 'chilled carton', 'كرتون' => 'carton', 'مبرد' => 'chilled', 'علبة' => 'box',
+        'كجم' => 'kg', 'كيلو' => 'kg', 'جرام' => 'g', 'غرام' => 'g',
+    ]);
 }
 $inWishlist = in_array((int)$p['id'], $_SESSION['wishlist'] ?? []);
 $wishTitle = $isRtl ? ($inWishlist ? 'إزالة من المفضلة' : 'إضافة للمفضلة') : ($inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist');
@@ -49,7 +52,7 @@ $wishTitle = $isRtl ? ($inWishlist ? 'إزالة من المفضلة' : 'إضا�
             <?php endif; ?>
             <?php if ($discountPercent > 0): ?>
                 <span class="badge"><?= $isRtl ? "خصم {$discountPercent}%" : "{$discountPercent}% OFF" ?></span>
-            <?php elseif (!empty($badgeText)): ?>
+            <?php elseif (!empty($badgeText) && !($isPreorder && preg_match('/pre-?\s?order|حجز\s*مسبق/iu', (string)$badgeText))): ?>
                 <span class="badge"><?= esc_html($badgeText) ?></span>
             <?php endif; ?>
             <?php if ($isFragile): ?>

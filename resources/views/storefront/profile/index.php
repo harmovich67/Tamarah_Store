@@ -5,94 +5,203 @@ $isRtl = I18n::isRtl();
 $locale = $locale ?? I18n::getLocale();
 $en = $locale === 'en';
 $currency = $en ? 'SAR' : 'ر.س';
-$arrow = 'arrow-left'; // mirrored for LTR by .directional-arrow
 
 $accountActive = 'profile';
-$accountHeading = $en ? 'Profile Overview' : 'الملف الشخصي';
-$accountSub = $en ? 'Manage your details, addresses and recent orders' : 'إدارة بياناتك وعناوينك وأحدث طلباتك';
+$accountHeading = $en ? 'Profile' : 'الملف الشخصي';
+$accountSub = $en ? 'Manage your details, addresses and orders in one place.' : 'يسعدنا وجودك معنا. راجع بياناتك وعناوينك وطلباتك من مكان واحد.';
 include __DIR__ . '/../../components/account_shell_open.php';
 ?>
 <?php if (!empty($success)): ?>
-    <div class="flash flash--success" role="status"><?= fnd_icon('check-circle', 18) ?><div><?= htmlspecialchars($success) ?></div></div>
+    <div class="flash flash--success" role="status" style="margin-bottom:14px"><?= fnd_icon('check-circle', 18) ?><div><?= htmlspecialchars($success) ?></div></div>
+<?php endif; ?>
+<?php if (!empty($error)): ?>
+    <div class="flash flash--error" role="alert" style="margin-bottom:14px"><?= fnd_icon('alert-circle', 18) ?><div><?= htmlspecialchars($error) ?></div></div>
 <?php endif; ?>
 
 <div class="account-profile-grid">
-    <!-- Personal info -->
+    <!-- Card 1: Personal Information -->
     <section class="account-card">
-        <header><span><?= fnd_icon('user-round', 21) ?></span><h2><?= $en ? 'Personal Details' : 'البيانات الشخصية والحساب' ?></h2></header>
-        <form action="<?= url('/profile/update-info') ?>" method="POST" class="account-form">
+        <header>
+            <span><?= fnd_icon('user-round', 21) ?></span>
+            <h2><?= $en ? 'Personal information' : 'المعلومات الشخصية' ?></h2>
+        </header>
+        <form action="<?= url('/profile/update-info') ?>" method="POST" class="account-form" id="profileInfoForm">
             <div class="form-field">
-                <label for="pf-name"><?= $en ? 'Full Name' : 'الاسم الكامل' ?> *</label>
-                <input id="pf-name" class="input" type="text" name="name" value="<?= htmlspecialchars($user['name']) ?>" required>
+                <label for="account-name"><?= $en ? 'Full name' : 'الاسم الكامل' ?> *</label>
+                <input id="account-name" class="input" type="text" name="name" value="<?= htmlspecialchars($user['name'] ?? '') ?>" required readonly>
             </div>
             <div class="form-field">
-                <label for="pf-phone"><?= $en ? 'Saudi Mobile Number' : 'رقم الجوال السعودي' ?></label>
-                <input id="pf-phone" class="input" type="text" value="<?= htmlspecialchars($user['phone'] ?? '') ?>" readonly dir="ltr" style="text-align:start">
-                <span class="field-hint"><?= $en ? 'Linked to OTP authentication' : 'رقم الجوال موثق برمز التحقق OTP' ?></span>
+                <label for="account-email"><?= $en ? 'Email (optional)' : 'البريد الإلكتروني (اختياري)' ?></label>
+                <input id="account-email" class="input" type="email" name="email" dir="ltr" value="<?= htmlspecialchars($user['email'] ?? '') ?>" readonly>
             </div>
             <div class="form-field">
-                <label for="pf-email"><?= $en ? 'Email Address' : 'البريد الإلكتروني' ?></label>
-                <input id="pf-email" class="input" type="email" name="email" value="<?= htmlspecialchars($user['email'] ?? '') ?>" dir="ltr" style="text-align:start">
+                <label for="account-phone"><?= $en ? 'Mobile number' : 'رقم الجوال' ?> *</label>
+                <input id="account-phone" class="input" type="tel" name="phone" dir="ltr" value="<?= htmlspecialchars($user['phone'] ?? '') ?>" required readonly>
             </div>
-            <div class="form-field">
-                <label for="pf-pass"><?= $en ? 'New Password (Optional)' : 'كلمة مرور جديدة (اختياري)' ?></label>
-                <input id="pf-pass" class="input" type="password" name="password" placeholder="••••••••" dir="ltr" style="text-align:start" autocomplete="new-password">
-                <span class="field-hint"><?= $en ? 'Leave blank if you do not wish to change password' : 'اتركه فارغاً إذا كنت لا ترغب بتغيير كلمة المرور' ?></span>
+            <div id="profile-save-container" style="display:none;margin-top:6px">
+                <button type="submit" class="button button--primary" style="width:100%">
+                    <?= fnd_icon('check', 18) ?><?= $en ? 'Save changes' : 'حفظ التعديلات' ?>
+                </button>
             </div>
-            <button type="submit" class="button button--primary"><?= fnd_icon('check', 18) ?><?= $en ? 'Save Changes' : 'حفظ التغييرات' ?></button>
         </form>
     </section>
 
-    <!-- Default address -->
+    <!-- Card 2: Change Password -->
     <section class="account-card">
-        <header><span><?= fnd_icon('map-pin', 21) ?></span><h2><?= $en ? 'Default Delivery Address' : 'عنوان التوصيل المعتمد' ?></h2></header>
-        <?php if ($defaultAddress): ?>
-            <div class="account-address-grid" style="grid-template-columns:1fr">
-                <article class="is-default">
-                    <span><?= $en ? 'Default' : 'الافتراضي' ?></span>
-                    <h3><?= htmlspecialchars($defaultAddress['title'] ?: ($en ? 'Home' : 'المنزل')) ?></h3>
-                    <p dir="ltr" style="text-align:start"><?= htmlspecialchars($defaultAddress['phone']) ?></p>
-                    <p><?= htmlspecialchars($defaultAddress['street_address'] ?: ($defaultAddress['address'] ?? '')) ?><?= !empty($defaultAddress['building_floor']) ? ' - ' . htmlspecialchars($defaultAddress['building_floor']) : '' ?></p>
-                    <small><?= htmlspecialchars($defaultAddress['city'] ?: 'الرياض') ?><?= !empty($defaultAddress['landmark']) ? ' · ' . htmlspecialchars($defaultAddress['landmark']) : '' ?></small>
-                </article>
-            </div>
-            <a class="button button--outline account-section-action" href="<?= url('/profile/addresses') ?>"><?= $en ? 'Manage Addresses' : 'إدارة العناوين' ?> (<?= (int)$addressesCount ?>)</a>
-        <?php else: ?>
-            <div class="account-empty">
-                <?= fnd_icon('map-pin', 30, '', 1.4) ?>
-                <p><?= $en ? 'No delivery addresses saved yet' : 'لم تقم بحفظ أي عنوان وطني بعد' ?></p>
-                <a href="<?= url('/profile/addresses') ?>" class="button button--primary button--sm" style="margin-top:10px"><?= fnd_icon('plus', 16) ?><?= $en ? 'Add Delivery Address' : 'إضافة عنوان توصيل' ?></a>
-            </div>
+        <header>
+            <span><?= fnd_icon('lock-keyhole', 21) ?></span>
+            <h2><?= $en ? 'Change password' : 'تغيير كلمة المرور' ?></h2>
+        </header>
+        <?php if (!empty($passError)): ?>
+            <div class="field-error" role="alert" style="margin-bottom:10px"><?= htmlspecialchars($passError) ?></div>
         <?php endif; ?>
-        <div class="account-review-note" style="margin-top:14px;margin-bottom:0">
-            <?= fnd_icon('snowflake', 14) ?> <?= $en ? 'Cold express shipping guarantees freshness across KSA.' : 'شحن مبرد فاخر وسريع يضمن وصول التمور الملكية طازجة إلى بابك.' ?>
-        </div>
-    </section>
-
-    <!-- Recent orders -->
-    <section class="account-card account-wide-card">
-        <header><span><?= fnd_icon('package', 21) ?></span><h2><?= $en ? 'Recent Orders' : 'أحدث الطلبات' ?></h2></header>
-        <div class="account-card-actions"><a class="button button--outline" href="<?= url('/profile/orders') ?>"><?= $en ? 'View All Orders' : 'عرض كافة الطلبات' ?><?= fnd_icon($arrow, 15, 'directional-arrow') ?></a></div>
-
-        <?php if (empty($recentOrders)): ?>
-            <div class="account-empty">
-                <p><?= $en ? 'No orders yet' : 'لم تقم بإنشاء أي طلبات حتى الآن' ?></p>
-                <a href="<?= url('/catalog') ?>" class="button button--primary button--sm" style="margin-top:10px"><?= $en ? 'Explore Luxury Dates' : 'تصفح أصناف التمور الفاخرة' ?></a>
+        <form action="<?= url('/profile/change-password') ?>" method="POST" class="account-form">
+            <div class="form-field">
+                <label for="account-current"><?= $en ? 'Current password' : 'كلمة المرور الحالية' ?> *</label>
+                <div class="password-input">
+                    <input id="account-current" class="input" type="password" name="currentPassword" autocomplete="current-password" required placeholder="••••••••">
+                    <button type="button" class="button button--icon" data-password-toggle aria-label="<?= $en ? 'Show password' : 'إظهار كلمة المرور' ?>"><?= fnd_icon('eye', 18) ?></button>
+                </div>
             </div>
-        <?php else: ?>
-            <div class="account-orders-table">
-                <?php foreach ($recentOrders as $ro): ?>
-                    <a class="order-row" href="<?= url('/profile/order/' . $ro['order_number']) ?>">
-                        <b dir="ltr"><?= htmlspecialchars($ro['order_number']) ?></b>
-                        <span><?= date('Y-m-d', strtotime($ro['created_at'])) ?></span>
-                        <span><?= (int)$ro['items_count'] ?> <?= $en ? 'items' : 'أصناف' ?></span>
-                        <strong><?= number_format((float)$ro['total'], 2) ?> <?= $currency ?></strong>
-                        <em class="status-pill" data-status="<?= esc_attr(strtolower((string)($ro['shipping_status'] ?? 'pending'))) ?>"><?= htmlspecialchars($ro['shipping_status'] ?: ($en ? 'Processing' : 'قيد التجهيز')) ?></em>
-                        <i style="font-style:normal;text-decoration:underline;text-underline-offset:4px"><?= $en ? 'Details' : 'التفاصيل' ?></i>
-                    </a>
-                <?php endforeach; ?>
+            <div class="form-field">
+                <label for="account-new"><?= $en ? 'New password' : 'كلمة المرور الجديدة' ?> *</label>
+                <div class="password-input">
+                    <input id="account-new" class="input" type="password" name="password" autocomplete="new-password" required placeholder="••••••••">
+                    <button type="button" class="button button--icon" data-password-toggle aria-label="<?= $en ? 'Show password' : 'إظهار كلمة المرور' ?>"><?= fnd_icon('eye', 18) ?></button>
+                </div>
             </div>
-        <?php endif; ?>
+            <div class="form-field">
+                <label for="account-confirm"><?= $en ? 'Confirm new password' : 'تأكيد كلمة المرور الجديدة' ?> *</label>
+                <div class="password-input">
+                    <input id="account-confirm" class="input" type="password" name="confirm" autocomplete="new-password" required placeholder="••••••••">
+                    <button type="button" class="button button--icon" data-password-toggle aria-label="<?= $en ? 'Show password' : 'إظهار كلمة المرور' ?>"><?= fnd_icon('eye', 18) ?></button>
+                </div>
+            </div>
+            <button type="submit" class="button button--primary" style="margin-top:6px;width:100%">
+                <?= fnd_icon('lock', 16) ?><?= $en ? 'Update password' : 'تحديث كلمة المرور' ?>
+            </button>
+        </form>
     </section>
 </div>
+
+<!-- Section: My Addresses -->
+<section class="account-card account-wide-card">
+    <header>
+        <span><?= fnd_icon('map-pin', 21) ?></span>
+        <h2><?= $en ? 'My addresses' : 'عناويني' ?></h2>
+    </header>
+    <div class="account-card-actions">
+        <a class="button button--outline" href="<?= url('/profile/addresses') ?>">
+            <?= fnd_icon('plus', 16) ?><?= $en ? 'Add new address' : 'إضافة عنوان جديد' ?>
+        </a>
+    </div>
+
+    <?php if (!empty($addresses)): ?>
+        <div class="account-address-grid">
+            <?php foreach ($addresses as $index => $address): 
+                $isDefault = !empty($address['is_default']) || $index === 0;
+            ?>
+                <article class="<?= $isDefault ? 'is-default' : '' ?>">
+                    <span><?= $isDefault ? ($en ? 'Default address' : 'العنوان الافتراضي') : ($en ? 'Saved address' : 'عنوان محفوظ') ?></span>
+                    <h3><?= esc_html($address['city'] ?: 'الرياض') ?></h3>
+                    <p><?= esc_html($address['title'] ?: ($en ? 'Home' : 'المنزل')) ?> · <?= esc_html($address['street_address'] ?: ($address['address'] ?? '')) ?></p>
+                    <?php if (!empty($address['landmark'])): ?>
+                        <small><?= esc_html($address['landmark']) ?></small>
+                    <?php endif; ?>
+                    <div>
+                        <a href="<?= url('/profile/addresses') ?>" class="button button--ghost"><?= fnd_icon('pencil', 14) ?><?= $en ? 'Edit' : 'تعديل' ?></a>
+                        <?php if (!$isDefault): ?>
+                            <form action="<?= url('/profile/addresses/default') ?>" method="POST" style="display:inline">
+                                <input type="hidden" name="id" value="<?= $address['id'] ?>">
+                                <button type="submit" class="button button--ghost"><?= fnd_icon('check', 14) ?><?= $en ? 'Set as default' : 'تعيين كافتراضي' ?></button>
+                            </form>
+                        <?php endif; ?>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+        </div>
+    <?php else: ?>
+        <p class="account-empty"><?= $en ? 'No saved addresses yet.' : 'لا توجد عناوين محفوظة بعد.' ?></p>
+    <?php endif; ?>
+</section>
+
+<!-- Section: Recent Orders -->
+<section class="account-card account-wide-card">
+    <header>
+        <span><?= fnd_icon('package', 21) ?></span>
+        <h2><?= $en ? 'Recent orders' : 'أحدث طلباتي' ?></h2>
+    </header>
+    <div class="account-card-actions">
+        <a class="button button--outline" href="<?= url('/profile/orders') ?>">
+            <?= $en ? 'View all orders' : 'عرض جميع الطلبات' ?><?= fnd_icon($isRtl ? 'chevron-left' : 'chevron-right', 15) ?>
+        </a>
+    </div>
+
+    <?php if (!empty($recentOrders)): ?>
+        <div class="account-orders-table">
+            <?php foreach ($recentOrders as $ro): 
+                $statusKey = strtolower((string)($ro['shipping_status'] ?: 'confirmed'));
+                $lines = $recentOrderItems[(int)$ro['id']] ?? [];
+            ?>
+                <details>
+                    <summary>
+                        <b dir="ltr">#<?= esc_html($ro['order_number']) ?></b>
+                        <span><?= date('Y-m-d', strtotime($ro['created_at'])) ?></span>
+                        <span><?= (int)$ro['items_count'] ?> <?= $en ? 'items' : 'منتج' ?></span>
+                        <strong><?= number_format((float)$ro['total'], 2) ?> <?= $currency ?></strong>
+                        <em data-status="<?= esc_attr($statusKey) ?>"><?= esc_html($ro['shipping_status'] ?: ($en ? 'Order confirmed' : 'الطلب مؤكد')) ?></em>
+                        <i><?= $en ? 'View details' : 'عرض التفاصيل' ?></i>
+                    </summary>
+                    <div class="account-order-details">
+                        <p><?= $en ? 'Refrigerated express shipping across Saudi Arabia.' : 'شحن مبرد فاخر وسريع لحفظ جودة التمور.' ?></p>
+                        <?php if (!empty($lines)): ?>
+                            <ul>
+                                <?php foreach ($lines as $line): ?>
+                                    <li>
+                                        <span><?= (int)$line['quantity'] ?> × <?= esc_html($line['product_name']) ?></span>
+                                        <strong><?= number_format((float)$line['price'] * (int)$line['quantity'], 2) ?> <?= $currency ?></strong>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php endif; ?>
+                    </div>
+                </details>
+            <?php endforeach; ?>
+        </div>
+    <?php else: ?>
+        <p class="account-empty"><?= $en ? 'No orders yet.' : 'لا توجد طلبات مسجلة بعد.' ?></p>
+    <?php endif; ?>
+</section>
+
 <?php include __DIR__ . '/../../components/account_shell_close.php'; ?>
+
+<script>
+let isProfileEditing = false;
+function toggleProfileEdit() {
+    isProfileEditing = !isProfileEditing;
+    const form = document.getElementById('profileInfoForm');
+    const saveContainer = document.getElementById('profile-save-container');
+    const textSpan = document.getElementById('account-toggle-edit-text');
+    
+    if (form) {
+        const inputs = form.querySelectorAll('input');
+        inputs.forEach(input => {
+            if (isProfileEditing) {
+                input.removeAttribute('readonly');
+                input.style.background = '#fff';
+            } else {
+                input.setAttribute('readonly', 'true');
+                input.style.background = '';
+            }
+        });
+    }
+    
+    if (saveContainer) {
+        saveContainer.style.display = isProfileEditing ? 'block' : 'none';
+    }
+    
+    if (textSpan) {
+        textSpan.textContent = isProfileEditing ? '<?= $en ? "Cancel edit" : "إلغاء التعديل" ?>' : '<?= $en ? "Edit profile" : "تعديل البيانات" ?>';
+    }
+}
+</script>

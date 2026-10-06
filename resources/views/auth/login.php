@@ -4,32 +4,31 @@ use App\Core\I18n;
 $locale = I18n::getLocale();
 $isRtl = I18n::isRtl();
 $isEn = $locale === 'en';
-$arrow = 'arrow-left'; // mirrored for LTR by .directional-arrow
-$otpEnabled = \App\Services\OtpService::isEnabled();
-$immersiveHeader = true;
-$pageCss = ['auth']; // page layer: foundation-auth.css
+$arrow = $isRtl ? 'arrow-left' : 'arrow-right';
+$pageCss = ['auth'];
 $authLayout = true;
+$immersiveHeader = true;
+
 $reqPath = rtrim(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '', '/');
 $adminLogin = str_ends_with($reqPath, '/admin/login');
-$defaultTab = $adminLogin ? 'password' : ($otpEnabled ? 'otp' : 'password');
 
 $headingText = $adminLogin
     ? ($isEn ? 'Administration Portal' : 'تسجيل دخول الإدارة')
-    : ($isEn ? 'Customer Sign In' : __('customer_login', default: 'تسجيل دخول العملاء'));
+    : ($isEn ? 'Sign in' : 'تسجيل الدخول');
 
 $subheadingText = $adminLogin
     ? ($isEn ? 'Enter your credentials to access the store management dashboard' : 'أدخل بيانات حساب الإدارة للوصول إلى لوحة تحكم المتجر')
-    : ($isEn ? 'Sign in to track luxury date orders, cold delivery, and addresses' : 'سجل دخولك لمتابعة طلبات التمور الفاخرة، الشحن وعناوين التوصيل');
+    : ($isEn ? 'Welcome back. Sign in to continue your journey.' : 'مرحبًا بعودتك، سجّل الدخول لمتابعة رحلتك.');
 ?>
 <div class="auth-page">
-    <div class="auth-scene"><img src="<?= asset('assets/images/home/hero.webp') ?>" alt=""></div>
+    <div class="auth-scene"><img src="<?= asset('assets/images/home/hero.webp') ?>" alt="" loading="eager"></div>
     <div class="auth-cream"></div>
-    <section class="auth-main">
+    <main id="main-content" class="auth-main">
         <div class="auth-card-column">
-            <div class="auth-card">
+            <section class="auth-card" aria-labelledby="auth-title">
                 <header class="auth-card-heading">
-                    <?= fnd_icon('tree-palm', 45, '', 1.2) ?>
-                    <h1><?= htmlspecialchars($headingText) ?></h1>
+                    <?= fnd_icon('tree-palm', 24, '', 1.4) ?>
+                    <h1 id="auth-title"><?= htmlspecialchars($headingText) ?></h1>
                     <p><?= htmlspecialchars($subheadingText) ?></p>
                 </header>
 
@@ -43,88 +42,89 @@ $subheadingText = $adminLogin
                     <div class="flash flash--success auth-flash" role="status"><?= fnd_icon('check-circle', 18) ?><div><?= htmlspecialchars($success) ?></div></div>
                 <?php endif; ?>
 
-                <div class="auth-tabs" id="loginTabs" role="tablist">
-                    <?php if ($otpEnabled): ?>
-                    <button type="button" role="tab" onclick="switchLoginTab('otp')" id="tabBtnOtp" class="<?= $defaultTab === 'otp' ? 'is-active' : '' ?>">
-                        <?= fnd_icon('phone', 16) ?><span><?= $isEn ? 'Mobile & OTP' : 'الجوال و OTP' ?></span>
-                    </button>
-                    <?php endif; ?>
-                    <button type="button" role="tab" onclick="switchLoginTab('password')" id="tabBtnPass" class="<?= $defaultTab === 'password' ? 'is-active' : '' ?>">
-                        <?= fnd_icon('lock-keyhole', 16) ?><span><?= $isEn ? 'Password' : 'كلمة المرور' ?></span>
-                    </button>
-                </div>
+                <div id="authNotice" class="auth-feedback" style="display:none;margin-bottom:12px"></div>
 
-                <?php if ($otpEnabled): ?>
-                <!-- OTP phone login -->
-                <form id="formOtpLogin" action="<?= url('/login') ?>" method="POST" class="auth-form<?= $defaultTab === 'otp' ? '' : ' hidden' ?>">
-                    <input type="hidden" name="login_type" value="otp">
-                    <fieldset>
-                        <p class="auth-hint"><?= $isEn ? 'Enter your Saudi mobile number to receive an instant verification code (OTP).' : 'أدخل رقم جوالك السعودي وسنرسل لك رمز التحقق (OTP) للدخول الفوري السريع.' ?></p>
-                        <div class="form-field">
-                            <label for="loginPhone"><?= $isEn ? 'Saudi Mobile Number' : 'رقم الجوال السعودي' ?><span> *</span></label>
-                            <div class="auth-input-wrap">
-                                <?= fnd_icon('phone', 18) ?>
-                                <input class="input" type="tel" name="phone" id="loginPhone" required dir="ltr" placeholder="05XXXXXXXX" autocomplete="tel">
-                            </div>
-                        </div>
-                    </fieldset>
-                    <button type="submit" class="button button--primary auth-submit" style="margin-top:14px">
-                        <?= $isEn ? 'Send OTP & Continue' : 'إرسال كود التحقق ومتابعة الدخول' ?><?= fnd_icon($arrow, 19, 'directional-arrow') ?>
-                    </button>
-                </form>
-                <?php endif; ?>
-
-                <!-- Password login -->
-                <form id="formPassLogin" action="<?= url('/login') ?>" method="POST" class="auth-form<?= $defaultTab === 'password' ? '' : ' hidden' ?>">
-                    <input type="hidden" name="login_type" value="password">
+                <form novalidate data-form="auth" class="auth-form" method="POST" action="<?= url($adminLogin ? '/admin/login' : '/login') ?>">
                     <fieldset>
                         <div class="form-field">
-                            <label for="loginEmail"><?= $isEn ? 'Email or Mobile Number' : 'البريد الإلكتروني أو رقم الجوال' ?><span> *</span></label>
+                            <label for="auth-identity"><?= $isEn ? 'Mobile number or email' : 'رقم الجوال أو البريد الإلكتروني' ?><span> *</span></label>
                             <div class="auth-input-wrap">
-                                <?= fnd_icon('user-round', 18) ?>
-                                <input class="input" type="text" id="loginEmail" name="email" value="<?= htmlspecialchars($email ?? '') ?>" required dir="ltr" placeholder="<?= $isEn ? 'name@example.com or 05XXXXXXXX' : 'البريد الإلكتروني أو 05XXXXXXXX' ?>" autocomplete="username">
+                                <?= fnd_icon('user-round', 19) ?>
+                                <input id="auth-identity" name="identity" class="input" value="<?= htmlspecialchars($email ?? '') ?>" placeholder="<?= $isEn ? 'Mobile number or email' : 'رقم الجوال أو البريد الإلكتروني' ?>" autocomplete="username" maxlength="254" required>
                             </div>
                         </div>
+
                         <div class="form-field">
-                            <label for="loginPass"><?= $isEn ? 'Password' : 'كلمة المرور' ?><span> *</span></label>
+                            <label for="auth-password"><?= $isEn ? 'Password' : 'كلمة المرور' ?><span> *</span></label>
                             <div class="auth-input-wrap">
-                                <?= fnd_icon('lock-keyhole', 18) ?>
+                                <?= fnd_icon('lock-keyhole', 19) ?>
                                 <div class="password-input">
-                                    <input class="input" type="password" id="loginPass" name="password" required dir="ltr" placeholder="<?= $isEn ? 'Enter your password' : 'أدخل كلمة المرور' ?>" autocomplete="current-password">
-                                    <button type="button" class="button button--icon" data-password-toggle aria-label="<?= $isEn ? 'Show password' : 'إظهار كلمة المرور' ?>" aria-pressed="false"><?= fnd_icon('eye', 18) ?></button>
+                                    <input id="auth-password" name="password" type="password" class="input" placeholder="<?= $isEn ? 'Password' : 'كلمة المرور' ?>" autocomplete="current-password" maxlength="128" required>
+                                    <button type="button" class="button button--icon" data-password-toggle aria-label="<?= $isEn ? 'Show password' : 'إظهار كلمة المرور' ?>"><?= fnd_icon('eye', 18) ?></button>
                                 </div>
                             </div>
                         </div>
+
+                        <a class="auth-forgot-link" href="<?= url('/forgot-password') ?>">
+                            <?= $isEn ? 'Forgot password?' : 'نسيت كلمة المرور؟' ?>
+                        </a>
+
+                        <button type="button" class="button button--outline auth-demo-fill" onclick="fillLoginDemo()">
+                            <?= $isEn ? 'Fill demo details' : 'تعبئة بيانات تجريبية' ?>
+                        </button>
+
+                        <button type="submit" class="button button--primary auth-submit">
+                            <?= $isEn ? 'Sign in' : 'تسجيل الدخول' ?><?= fnd_icon($arrow, 20, 'directional-arrow') ?>
+                        </button>
                     </fieldset>
-                    <button type="submit" class="button button--primary auth-submit" style="margin-top:14px">
-                        <?= $isEn ? 'Sign In' : 'تسجيل الدخول' ?><?= fnd_icon($arrow, 19, 'directional-arrow') ?>
-                    </button>
                 </form>
 
+                <div class="auth-social-divider">
+                    <span><?= $isEn ? 'Or continue with' : 'أو المتابعة عبر' ?></span>
+                </div>
+
+                <div class="auth-social">
+                    <button type="button" class="button button--outline" onclick="showAuthNotice('<?= $isEn ? 'Social sign-in is not connected yet.' : 'تسجيل الدخول الاجتماعي غير مفعّل حاليًا.' ?>')">
+                        <?= fnd_icon('apple', 22) ?><?= $isEn ? 'Continue with Apple' : 'متابعة عبر Apple' ?>
+                    </button>
+                    <button type="button" class="button button--outline" onclick="showAuthNotice('<?= $isEn ? 'Social sign-in is not connected yet.' : 'تسجيل الدخول الاجتماعي غير مفعّل حاليًا.' ?>')">
+                        <span class="google-letter" aria-hidden="true">G</span><?= $isEn ? 'Continue with Google' : 'متابعة عبر Google' ?>
+                    </button>
+                </div>
+
                 <p class="auth-switch">
-                    <?= $isEn ? "Don't have a customer account yet?" : 'ليس لديك حساب عميل حتى الآن؟' ?>
-                    <a href="<?= url('/register') ?>"><?= $isEn ? 'Create new account via mobile' : 'إنشاء حساب جديد بالهاتف' ?></a>
+                    <?= $isEn ? 'New to Tamrna?' : 'ليس لديك حساب؟' ?>
+                    <a href="<?= url('/register') ?>"><?= $isEn ? 'Create account' : 'إنشاء حساب جديد' ?></a>
                 </p>
+
                 <a class="auth-back" href="<?= url('/') ?>">
-                    <?= $isEn ? 'Back to store home' : 'العودة للصفحة الرئيسية للمتجر' ?>
+                    <?= $isEn ? 'Return to the store' : 'العودة للمتجر' ?>
                 </a>
-            </div>
+
+                <p class="auth-demo-notice">
+                    <?= $isEn ? 'Local preview: use test data only. No SMS is sent. Accounts are stored in this browser only.' : 'وضع تجربة محلي: استخدم بيانات اختبار فقط. لا تُرسل رسائل SMS، وتُحفظ الحسابات في هذا المتصفح فقط.' ?>
+                </p>
+            </section>
         </div>
+
         <?php include __DIR__ . '/../components/auth_story.php'; ?>
-    </section>
+    </main>
     <?php include __DIR__ . '/../components/auth_label.php'; ?>
 </div>
 
 <script>
-    function switchLoginTab(tab) {
-        const formOtp = document.getElementById('formOtpLogin');
-        const formPass = document.getElementById('formPassLogin');
-        const tabBtnOtp = document.getElementById('tabBtnOtp');
-        const tabBtnPass = document.getElementById('tabBtnPass');
-        const otp = tab === 'otp';
-        if (formOtp) formOtp.classList.toggle('hidden', !otp);
-        if (formPass) formPass.classList.toggle('hidden', otp);
-        if (tabBtnOtp) tabBtnOtp.classList.toggle('is-active', otp);
-        if (tabBtnPass) tabBtnPass.classList.toggle('is-active', !otp);
+function fillLoginDemo() {
+    const identInput = document.getElementById('auth-identity');
+    const passInput = document.getElementById('auth-password');
+    if (identInput) identInput.value = 'demo@tamrna.test';
+    if (passInput) passInput.value = 'Tmrna2026';
+}
+
+function showAuthNotice(msg) {
+    const box = document.getElementById('authNotice');
+    if (box) {
+        box.textContent = msg;
+        box.style.display = 'block';
     }
+}
 </script>
